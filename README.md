@@ -1,21 +1,34 @@
-# shadcn/ui monorepo template
+# chatreach-manager
 
-This is a Next.js monorepo template with shadcn/ui.
+A Next.js application with shadcn/ui. All source lives under `src/`.
+
+## Development
+
+```bash
+pnpm install
+pnpm dev        # http://localhost:3000
+pnpm ssldev     # https://chatreach.test:3001 (uses local certs)
+```
 
 ## Adding components
 
-To add components to your app, run the following command at the root of your `web` app:
-
 ```bash
-pnpm dlx shadcn@latest add button -c apps/web
+pnpm dlx shadcn@latest add button
 ```
 
-This will place the ui components in the `packages/ui/src/components` directory.
+This places the UI components in `src/components/ui`.
 
 ## Using components
 
-To use the components in your app, import them from the `ui` package.
-
 ```tsx
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@/components/ui/button";
 ```
+
+## Scripts
+
+- `pnpm dev` / `pnpm ssldev` — dev server (HTTP / HTTPS)
+- `pnpm build` — production build
+- `pnpm start` — serve the production build
+- `pnpm lint` — ESLint
+- `pnpm typecheck` — TypeScript check
+- `pnpm format` — Prettier
