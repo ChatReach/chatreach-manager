@@ -25,18 +25,31 @@ const ClientMiddlewareLayout = ({ children }: Props) => {
   useEffect(() => {
     if (!isClient || loading) return;
 
+    const requiresTwoFactorVerification = Boolean(user?.two_factor_enabled && !user?.two_factor_verified);
+    const isTwoFactorVerifyRoute = pathname === APP_ROUTES.SIGN_IN_VERIFY;
+
+    if (isTwoFactorVerifyRoute && !user) {
+      router.replace(APP_ROUTES.SIGN_IN);
+      return;
+    }
+
+    if (requiresTwoFactorVerification && !isTwoFactorVerifyRoute) {
+      router.replace(APP_ROUTES.SIGN_IN_VERIFY);
+      return;
+    }
+
+    if (!requiresTwoFactorVerification && user && isAuthRoute) {
+      router.replace(APP_ROUTES.HOME);
+      return;
+    }
+
     if (!user && !isAuthRoute) {
       router.replace(APP_ROUTES.SIGN_IN);
       return;
     }
 
-    if (user && isAuthRoute) {
-      router.replace(APP_ROUTES.HOME);
-      return;
-    }
-
     setIsReady(true);
-  }, [isClient, loading, user, isAuthRoute, router]);
+  }, [isClient, loading, user, isAuthRoute, pathname, router]);
 
   if (!isClient || loading || !isReady) return null;
 

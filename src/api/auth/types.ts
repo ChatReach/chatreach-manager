@@ -14,6 +14,25 @@ export interface LoginResponse {
   refreshToken: string;
 }
 
+export interface TwoFactorEnableResponse {
+  secret: string;
+  qr_svg: string;
+}
+
+export interface TwoFactorConfirmParams {
+  code: string;
+}
+
+export interface TwoFactorVerifyParams {
+  code?: string;
+  recovery_code?: string;
+}
+
+export interface TwoFactorRecoveryCodesResponse {
+  message: string;
+  recovery_codes: string[];
+}
+
 export interface User {
   id: string;
   firstname: string;

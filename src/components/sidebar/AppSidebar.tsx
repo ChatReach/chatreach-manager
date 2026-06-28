@@ -26,6 +26,7 @@ const navItems = [
   { label: 'Dashboard', href: APP_ROUTES.HOME, icon: LayoutDashboard },
   { label: 'Tenants', href: APP_ROUTES.TENANTS, icon: Users },
   { label: 'Subscriptions', href: APP_ROUTES.SUBSCRIPTIONS, icon: CreditCard },
+  { label: 'Settings', href: APP_ROUTES.SETTINGS_SECURITY, icon: Settings },
 ];
 
 const AppSidebar = () => {
