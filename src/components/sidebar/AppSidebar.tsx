@@ -59,7 +59,7 @@ const AppSidebar = () => {
             <SidebarMenu>
               {navItems.map(({ label, href, icon: Icon }) => (
                 <SidebarMenuItem key={href}>
-                  <SidebarMenuButton asChild isActive={pathname === href} tooltip={label}>
+                  <SidebarMenuButton asChild isActive={href === '/' ? pathname === href : pathname.startsWith(href)} tooltip={label}>
                     <Link href={href}>
                       <Icon />
                       <span>{label}</span>

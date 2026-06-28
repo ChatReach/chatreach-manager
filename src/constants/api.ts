@@ -5,5 +5,9 @@ export const API_ROUTES = {
     LOGOUT: '/auth/logout',
     USER: '/auth/user',
   },
+  ADMIN: {
+    TENANTS: '/admin/tenants',
+    TENANT: (id: string) => `/admin/tenants/${id}`,
+  },
   BROADCASTING_AUTH: '/broadcasting/auth',
 };
