@@ -26,6 +26,18 @@ export interface Tenant {
   deleted_at: string | null;
 }
 
+export interface CreateTenantPayload {
+  name: string;
+  is_personal?: boolean;
+  trial_days?: number;
+  owner_id?: string;
+  owner?: {
+    firstname: string;
+    lastname: string;
+    email: string;
+  };
+}
+
 export interface TenantsResponse {
   data: Tenant[];
   links: {

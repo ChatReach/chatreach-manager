@@ -11,6 +11,7 @@ export const API_ROUTES = {
     TWO_FACTOR_RECOVERY_CODES: '/auth/2fa/recovery-codes',
   },
   ADMIN: {
+    USERS: '/admin/users',
     TENANTS: '/admin/tenants',
     TENANT: (id: string) => `/admin/tenants/${id}`,
   },

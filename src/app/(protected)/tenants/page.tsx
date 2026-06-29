@@ -9,6 +9,7 @@ import { formatDate } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { APP_ROUTES } from '@/constants/routes';
 import {
   Table,
   TableBody,
@@ -48,6 +49,9 @@ export default function TenantsPage() {
             <p className="text-muted-foreground text-sm">{total} total</p>
           )}
         </div>
+        <Button asChild>
+          <Link href={APP_ROUTES.TENANTS_CREATE}>Create Tenant</Link>
+        </Button>
       </div>
 
       {error && (
