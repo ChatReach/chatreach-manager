@@ -7,10 +7,12 @@ import { ArrowLeft } from 'lucide-react';
 import { getTenant } from '@/api/admin/tenants';
 import type { Tenant } from '@/api/admin/tenants/types';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate, formatDateTime } from '@/lib/utils';
 import { APP_ROUTES } from '@/constants/routes';
+import { ManageSubscriptionDialog } from './ManageSubscriptionDialog';
 
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -37,12 +39,18 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [manageOpen, setManageOpen] = useState(false);
 
-  useEffect(() => {
+  const loadTenant = () => {
     getTenant(id)
       .then(setTenant)
       .catch((err) => setError(err.message ?? 'Failed to load tenant.'))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadTenant();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   if (loading) {
@@ -101,8 +109,11 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-base">Subscription</CardTitle>
+            <Button variant="outline" size="sm" onClick={() => setManageOpen(true)}>
+              Manage
+            </Button>
           </CardHeader>
           <CardContent className="grid gap-3">
             <DetailRow label="Plan" value={
@@ -165,6 +176,13 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
           <StatCard label="Contacts" value={tenant.contacts_count} />
         </div>
       </div>
+
+      <ManageSubscriptionDialog
+        open={manageOpen}
+        onOpenChange={setManageOpen}
+        tenantId={tenant.id}
+        onChanged={loadTenant}
+      />
     </div>
   );
 }

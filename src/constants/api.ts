@@ -14,6 +14,17 @@ export const API_ROUTES = {
     USERS: '/admin/users',
     TENANTS: '/admin/tenants',
     TENANT: (id: string) => `/admin/tenants/${id}`,
+
+    SUBSCRIPTION_PLANS: '/admin/subscription-plans',
+    SUBSCRIPTION_PLAN: (id: string) => `/admin/subscription-plans/${id}`,
+    SUBSCRIPTION_PLAN_ADDONS: (planId: string) => `/admin/subscription-plans/${planId}/addons`,
+    SUBSCRIPTION_ADDON: (id: string) => `/admin/addons/${id}`,
+
+    TENANT_SUBSCRIPTION: (tenantId: string) => `/admin/tenants/${tenantId}/subscription`,
+    TENANT_SUBSCRIPTION_SWAP: (tenantId: string) => `/admin/tenants/${tenantId}/subscription/swap`,
+    TENANT_SUBSCRIPTION_CANCEL: (tenantId: string) => `/admin/tenants/${tenantId}/subscription/cancel`,
+    TENANT_SUBSCRIPTION_RESUME: (tenantId: string) => `/admin/tenants/${tenantId}/subscription/resume`,
+    TENANT_SUBSCRIPTION_ADDONS: (tenantId: string) => `/admin/tenants/${tenantId}/subscription/addons`,
   },
   BROADCASTING_AUTH: '/broadcasting/auth',
 };
