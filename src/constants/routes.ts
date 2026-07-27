@@ -5,6 +5,7 @@ export const APP_ROUTES = {
   TENANTS: '/tenants',
   TENANTS_CREATE: '/tenants/create',
   SUBSCRIPTIONS: '/subscriptions',
+  WEBHOOK_CALLS: '/webhook-calls',
   SETTINGS_SECURITY: '/settings/security',
   PROFILE: '/profile',
 };

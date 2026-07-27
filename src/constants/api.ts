@@ -15,6 +15,9 @@ export const API_ROUTES = {
     TENANTS: '/admin/tenants',
     TENANT: (id: string) => `/admin/tenants/${id}`,
 
+    WEBHOOK_CALLS: '/admin/webhook-calls',
+    WEBHOOK_CALL: (id: string) => `/admin/webhook-calls/${id}`,
+
     SUBSCRIPTION_PLANS: '/admin/subscription-plans',
     SUBSCRIPTION_PLAN: (id: string) => `/admin/subscription-plans/${id}`,
     SUBSCRIPTION_PLAN_ADDONS: (planId: string) => `/admin/subscription-plans/${planId}/addons`,
