@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getTenants } from '@/api/admin/tenants';
 import type { Tenant } from '@/api/admin/tenants/types';
 import Pagination from '@/components/common/Pagination';
+import { BETA_ACCESS_STATUS_BADGE } from '@/lib/betaAccess';
 import { formatDate } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -67,6 +68,7 @@ export default function TenantsPage() {
               <TableHead>Owner</TableHead>
               <TableHead>Plan</TableHead>
               <TableHead>Trial</TableHead>
+              <TableHead>Beta Access</TableHead>
               <TableHead className="text-right">Users</TableHead>
               <TableHead>Created</TableHead>
               <TableHead />
@@ -114,6 +116,11 @@ export default function TenantsPage() {
                     ) : (
                       <span className="text-muted-foreground text-sm">No</span>
                     )}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={BETA_ACCESS_STATUS_BADGE[tenant.beta_access_status].variant}>
+                      {BETA_ACCESS_STATUS_BADGE[tenant.beta_access_status].label}
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-right">{tenant.users_count}</TableCell>
                   <TableCell className="text-muted-foreground text-sm">

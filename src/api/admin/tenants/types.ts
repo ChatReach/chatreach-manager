@@ -5,6 +5,8 @@ export interface TenantOwner {
   email: string;
 }
 
+export type BetaAccessStatus = 'not_requested' | 'pending' | 'approved' | 'denied';
+
 export interface Tenant {
   id: string;
   reference: string;
@@ -15,6 +17,8 @@ export interface Tenant {
   subscription_plan: string | null;
   is_on_trial: boolean;
   trial_ends_at: string | null;
+  beta_access_status: BetaAccessStatus;
+  beta_access_requested_at: string | null;
   monthly_spending_limit: number | null;
   has_exceeded_spending_limit: boolean;
   users_count: number;
@@ -36,6 +40,10 @@ export interface CreateTenantPayload {
     lastname: string;
     email: string;
   };
+}
+
+export interface UpdateBetaAccessPayload {
+  status: 'approved' | 'denied';
 }
 
 export interface TenantsResponse {

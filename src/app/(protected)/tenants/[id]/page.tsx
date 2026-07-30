@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate, formatDateTime } from '@/lib/utils';
 import { APP_ROUTES } from '@/constants/routes';
+import { BetaAccessCard } from './BetaAccessCard';
 import { ManageSubscriptionDialog } from './ManageSubscriptionDialog';
 
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
@@ -139,6 +140,13 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
             } />
           </CardContent>
         </Card>
+
+        <BetaAccessCard
+          tenantId={tenant.id}
+          status={tenant.beta_access_status}
+          requestedAt={tenant.beta_access_requested_at}
+          onChanged={loadTenant}
+        />
 
         <Card>
           <CardHeader>
