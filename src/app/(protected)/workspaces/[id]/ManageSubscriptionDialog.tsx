@@ -96,7 +96,7 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
         <DialogHeader>
           <DialogTitle>Manage Subscription</DialogTitle>
           <DialogDescription>
-            Change the plan, interval, addons, or cancellation state for this tenant.
+            Change the plan, interval, addons, or cancellation state for this workspace.
           </DialogDescription>
         </DialogHeader>
 
@@ -107,7 +107,7 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
           </div>
         ) : !state?.subscribed ? (
           <p className="text-muted-foreground text-sm">
-            This tenant has no active Stripe subscription. Plan changes can only be made once the tenant
+            This workspace has no active Stripe subscription. Plan changes can only be made once the workspace
             has subscribed.
           </p>
         ) : (
@@ -252,7 +252,7 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
                   className="w-fit"
                   disabled={busy}
                   onClick={() => {
-                    if (!window.confirm('Cancel this tenant’s subscription?')) return;
+                    if (!window.confirm('Cancel this workspace’s subscription?')) return;
                     run(() => cancelTenantSubscription(tenantId), 'Subscription canceled.');
                   }}
                 >

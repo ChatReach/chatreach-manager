@@ -35,7 +35,7 @@ function StatCard({ label, value }: { label: string; value: number }) {
   );
 }
 
-export default function TenantDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [loading, setLoading] = useState(true);
@@ -45,7 +45,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
   const loadTenant = () => {
     getTenant(id)
       .then(setTenant)
-      .catch((err) => setError(err.message ?? 'Failed to load tenant.'))
+      .catch((err) => setError(err.message ?? 'Failed to load workspace.'))
       .finally(() => setLoading(false));
   };
 
@@ -77,11 +77,11 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
   return (
     <div className="flex flex-col gap-6">
       <Link
-        href={APP_ROUTES.TENANTS}
+        href={APP_ROUTES.WORKSPACES}
         className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-sm w-fit"
       >
         <ArrowLeft className="size-4" />
-        Back to Tenants
+        Back to Workspaces
       </Link>
 
       <div className="flex items-center gap-3 flex-wrap">

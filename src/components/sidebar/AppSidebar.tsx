@@ -38,8 +38,8 @@ import { useRouter } from 'next/navigation';
 
 const navItems = [
   { label: 'Dashboard', href: APP_ROUTES.HOME, icon: LayoutDashboard },
-  { label: 'Tenants', href: APP_ROUTES.TENANTS, icon: Users },
-  { label: 'Subscriptions', href: APP_ROUTES.SUBSCRIPTIONS, icon: CreditCard },
+  { label: 'Workspaces', href: APP_ROUTES.WORKSPACES, icon: Users },
+  { label: 'Subscription Plans', href: APP_ROUTES.SUBSCRIPTIONS, icon: CreditCard },
   { label: 'Webhook Calls', href: APP_ROUTES.WEBHOOK_CALLS, icon: Webhook },
 ];
 

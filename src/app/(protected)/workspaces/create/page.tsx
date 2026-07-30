@@ -29,7 +29,7 @@ interface FormInputs {
   owner_email: string;
 }
 
-export default function CreateTenantPage() {
+export default function CreateWorkspacePage() {
   const router = useRouter();
   const [ownerMode, setOwnerMode] = useState<OwnerMode>('existing');
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
@@ -76,10 +76,10 @@ export default function CreateTenantPage() {
           },
         });
       }
-      toast.success('Tenant created successfully.');
-      router.push(APP_ROUTES.TENANTS);
+      toast.success('Workspace created successfully.');
+      router.push(APP_ROUTES.WORKSPACES);
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Failed to create tenant.');
+      toast.error(err instanceof Error ? err.message : 'Failed to create workspace.');
     }
   };
 
@@ -87,7 +87,7 @@ export default function CreateTenantPage() {
     <div className="flex flex-col gap-6 max-w-2xl">
       <div className="flex items-center gap-3">
         <Button asChild variant="ghost" size="sm">
-          <Link href={APP_ROUTES.TENANTS}>
+          <Link href={APP_ROUTES.WORKSPACES}>
             <ArrowLeft className="h-4 w-4" />
             Back
           </Link>
@@ -95,7 +95,7 @@ export default function CreateTenantPage() {
       </div>
 
       <div>
-        <h1 className="text-2xl font-semibold">Create Tenant</h1>
+        <h1 className="text-2xl font-semibold">Create Workspace</h1>
         <p className="text-muted-foreground text-sm mt-1">Create a new workspace and assign an owner.</p>
       </div>
 
@@ -249,7 +249,7 @@ export default function CreateTenantPage() {
 
         <div className="flex justify-end">
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating...' : 'Create Tenant'}
+            {isSubmitting ? 'Creating...' : 'Create Workspace'}
           </Button>
         </div>
       </form>

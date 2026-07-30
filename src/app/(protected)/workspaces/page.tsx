@@ -20,7 +20,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-export default function TenantsPage() {
+export default function WorkspacesPage() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [total, setTotal] = useState<number | null>(null);
   const [page, setPage] = useState(1);
@@ -37,7 +37,7 @@ export default function TenantsPage() {
         setTotal(res.meta.total);
         setLastPage(res.meta.last_page);
       })
-      .catch((err) => setError(err.message ?? 'Failed to load tenants.'))
+      .catch((err) => setError(err.message ?? 'Failed to load workspaces.'))
       .finally(() => setLoading(false));
   }, [page, pageSize]);
 
@@ -45,13 +45,13 @@ export default function TenantsPage() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Tenants</h1>
+          <h1 className="text-2xl font-semibold">Workspaces</h1>
           {total !== null && (
             <p className="text-muted-foreground text-sm">{total} total</p>
           )}
         </div>
         <Button asChild>
-          <Link href={APP_ROUTES.TENANTS_CREATE}>Create Tenant</Link>
+          <Link href={APP_ROUTES.WORKSPACES_CREATE}>Create Workspace</Link>
         </Button>
       </div>
 
@@ -88,7 +88,7 @@ export default function TenantsPage() {
             ) : tenants.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={9} className="text-muted-foreground text-center">
-                  No tenants found.
+                  No workspaces found.
                 </TableCell>
               </TableRow>
             ) : (
@@ -128,7 +128,7 @@ export default function TenantsPage() {
                   </TableCell>
                   <TableCell>
                     <Button asChild variant="outline" size="sm">
-                      <Link href={`/tenants/${tenant.id}`}>View</Link>
+                      <Link href={`/workspaces/${tenant.id}`}>View</Link>
                     </Button>
                   </TableCell>
                 </TableRow>
