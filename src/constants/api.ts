@@ -1,19 +1,20 @@
 export const API_ROUTES = {
   AUTH: {
     SESSION: '/session',
-    LOGIN: '/auth/login',
-    LOGOUT: '/auth/logout',
-    USER: '/auth/user',
-    TWO_FACTOR_ENABLE: '/auth/2fa/enable',
-    TWO_FACTOR_CONFIRM: '/auth/2fa/confirm',
-    TWO_FACTOR_VERIFY: '/auth/2fa/verify',
-    TWO_FACTOR_DISABLE: '/auth/2fa/disable',
-    TWO_FACTOR_RECOVERY_CODES: '/auth/2fa/recovery-codes',
+    LOGIN: '/admin/auth/login',
+    LOGOUT: '/admin/auth/logout',
+    USER: '/admin/auth/user',
+    TWO_FACTOR_ENABLE: '/admin/auth/2fa/enable',
+    TWO_FACTOR_CONFIRM: '/admin/auth/2fa/confirm',
+    TWO_FACTOR_VERIFY: '/admin/auth/2fa/verify',
+    TWO_FACTOR_DISABLE: '/admin/auth/2fa/disable',
+    TWO_FACTOR_RECOVERY_CODES: '/admin/auth/2fa/recovery-codes',
   },
   ADMIN: {
     USERS: '/admin/users',
     TENANTS: '/admin/tenants',
     TENANT: (id: string) => `/admin/tenants/${id}`,
+    TENANT_BETA_ACCESS: (id: string) => `/admin/tenants/${id}/beta-access`,
 
     WEBHOOK_CALLS: '/admin/webhook-calls',
     WEBHOOK_CALL: (id: string) => `/admin/webhook-calls/${id}`,

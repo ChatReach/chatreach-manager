@@ -42,6 +42,7 @@ export interface User {
   created_at: string;
   updated_at: string;
   profile_photo_url: string;
+  is_admin: boolean;
   two_factor_enabled: boolean;
   two_factor_verified: boolean;
   email_verified: boolean;
