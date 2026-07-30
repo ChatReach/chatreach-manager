@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { use } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { getTenant } from '@/api/admin/tenants';
@@ -10,6 +11,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { formatDate, formatDateTime } from '@/lib/utils';
 import { APP_ROUTES } from '@/constants/routes';
 import { BetaAccessCard } from './BetaAccessCard';
@@ -37,6 +46,7 @@ function StatCard({ label, value }: { label: string; value: number }) {
 
 export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const router = useRouter();
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -94,18 +104,24 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
         )}
       </div>
 
+      {/* Organization/tenant details */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Organization</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-3">
+          <CardContent className="grid gap-3 sm:grid-cols-2">
             <DetailRow label="Name" value={tenant.name} />
             <DetailRow label="Reference" value={
               <span className="font-mono">{tenant.reference}</span>
             } />
             <DetailRow label="Personal workspace" value={tenant.is_personal ? 'Yes' : 'No'} />
             <DetailRow label="Stripe ID" value={tenant.stripe_id} />
+            <DetailRow label="Created" value={formatDateTime(tenant.created_at)} />
+            <DetailRow label="Updated" value={formatDateTime(tenant.updated_at)} />
+            <DetailRow label="Deleted" value={
+              tenant.deleted_at ? formatDateTime(tenant.deleted_at) : null
+            } />
           </CardContent>
         </Card>
 
@@ -116,7 +132,7 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
               Manage
             </Button>
           </CardHeader>
-          <CardContent className="grid gap-3">
+          <CardContent className="grid gap-3 sm:grid-cols-2">
             <DetailRow label="Plan" value={
               tenant.subscription_plan ? (
                 <Badge variant="secondary" className="capitalize">
@@ -124,6 +140,7 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
                 </Badge>
               ) : null
             } />
+            <DetailRow label="" value=""/>
             <DetailRow label="On trial" value={tenant.is_on_trial ? 'Yes' : 'No'} />
             <DetailRow label="Trial ends at" value={
               tenant.trial_ends_at ? formatDate(tenant.trial_ends_at) : null
@@ -147,34 +164,9 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
           requestedAt={tenant.beta_access_requested_at}
           onChanged={loadTenant}
         />
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Owner</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-3">
-            <DetailRow label="Name" value={`${tenant.owner.firstname} ${tenant.owner.lastname}`} />
-            <DetailRow label="Email" value={tenant.owner.email} />
-            <DetailRow label="User ID" value={
-              <span className="font-mono text-xs">{tenant.owner.id}</span>
-            } />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Timestamps</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-3">
-            <DetailRow label="Created" value={formatDateTime(tenant.created_at)} />
-            <DetailRow label="Updated" value={formatDateTime(tenant.updated_at)} />
-            <DetailRow label="Deleted" value={
-              tenant.deleted_at ? formatDateTime(tenant.deleted_at) : null
-            } />
-          </CardContent>
-        </Card>
       </div>
 
+      {/* Statistics */}
       <div>
         <h2 className="text-base font-semibold mb-3">Statistics</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -182,6 +174,59 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
           <StatCard label="Campaigns" value={tenant.campaigns_count} />
           <StatCard label="Workflows" value={tenant.workflows_count} />
           <StatCard label="Contacts" value={tenant.contacts_count} />
+        </div>
+      </div>
+
+      {/* Members */}
+      <div>
+        <h2 className="text-base font-semibold mb-3">Members</h2>
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Role</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {tenant.users?.length ? (
+                tenant.users.map((member) => (
+                  <TableRow
+                    key={member.id}
+                    className="cursor-pointer"
+                    onClick={() => router.push(APP_ROUTES.USER(member.id))}
+                  >
+                    <TableCell className="font-medium">
+                      <Link
+                        href={APP_ROUTES.USER(member.id)}
+                        className="hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {member.firstname} {member.lastname}
+                      </Link>
+                    </TableCell>
+                    <TableCell>{member.email}</TableCell>
+                    <TableCell>
+                      {member.role ? (
+                        <Badge variant="secondary" className="capitalize">
+                          {member.role}
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={3} className="text-muted-foreground text-center">
+                    No members found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
       </div>
 

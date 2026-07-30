@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { getTenants } from '@/api/admin/tenants';
 import type { Tenant } from '@/api/admin/tenants/types';
 import Pagination from '@/components/common/Pagination';
+import SearchInput from '@/components/common/SearchInput';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { BETA_ACCESS_STATUS_BADGE } from '@/lib/betaAccess';
 import { formatDate } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +24,7 @@ import {
 } from '@/components/ui/table';
 
 export default function WorkspacesPage() {
+  const router = useRouter();
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [total, setTotal] = useState<number | null>(null);
   const [page, setPage] = useState(1);
@@ -28,10 +32,16 @@ export default function WorkspacesPage() {
   const [lastPage, setLastPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
 
   useEffect(() => {
     setLoading(true);
-    getTenants({ 'page[number]': page, 'page[size]': pageSize })
+    getTenants({ 'page[number]': page, 'page[size]': pageSize, search: debouncedSearch })
       .then((res) => {
         setTenants(res.data);
         setTotal(res.meta.total);
@@ -39,7 +49,7 @@ export default function WorkspacesPage() {
       })
       .catch((err) => setError(err.message ?? 'Failed to load workspaces.'))
       .finally(() => setLoading(false));
-  }, [page, pageSize]);
+  }, [page, pageSize, debouncedSearch]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -58,6 +68,13 @@ export default function WorkspacesPage() {
       {error && (
         <p className="text-destructive text-sm">{error}</p>
       )}
+
+      <SearchInput
+        value={search}
+        onChange={setSearch}
+        placeholder="Search workspaces…"
+        className="max-w-sm"
+      />
 
       <div className="rounded-md border">
         <Table>
@@ -93,7 +110,11 @@ export default function WorkspacesPage() {
               </TableRow>
             ) : (
               tenants.map((tenant) => (
-                <TableRow key={tenant.id}>
+                <TableRow
+                  key={tenant.id}
+                  className="cursor-pointer"
+                  onClick={() => router.push(`/workspaces/${tenant.id}`)}
+                >
                   <TableCell className="font-medium">{tenant.name}</TableCell>
                   <TableCell className="text-muted-foreground font-mono text-xs">
                     {tenant.reference}
@@ -126,7 +147,7 @@ export default function WorkspacesPage() {
                   <TableCell className="text-muted-foreground text-sm">
                     {formatDate(tenant.created_at)}
                   </TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <Button asChild variant="outline" size="sm">
                       <Link href={`/workspaces/${tenant.id}`}>View</Link>
                     </Button>

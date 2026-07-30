@@ -5,6 +5,15 @@ export interface TenantOwner {
   email: string;
 }
 
+export interface TenantMember {
+  id: string;
+  firstname: string;
+  lastname: string;
+  email: string;
+  profile_photo_url?: string;
+  role: string | null;
+}
+
 export type BetaAccessStatus = 'not_requested' | 'pending' | 'approved' | 'denied';
 
 export interface Tenant {
@@ -21,6 +30,7 @@ export interface Tenant {
   beta_access_requested_at: string | null;
   monthly_spending_limit: number | null;
   has_exceeded_spending_limit: boolean;
+  users?: TenantMember[];
   users_count: number;
   campaigns_count: number;
   workflows_count: number;

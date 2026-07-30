@@ -3,12 +3,12 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getWebhookCalls } from '@/api/admin/webhookCalls';
-import type { WebhookCall } from '@/api/admin/webhookCalls/types';
+import { getUsers } from '@/api/admin/users';
+import type { AdminUser } from '@/api/admin/users/types';
 import Pagination from '@/components/common/Pagination';
 import SearchInput from '@/components/common/SearchInput';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
-import { formatDateTime } from '@/lib/utils';
+import { formatDate } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -22,9 +22,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-export default function WebhookCallsPage() {
+export default function UsersPage() {
   const router = useRouter();
-  const [webhookCalls, setWebhookCalls] = useState<WebhookCall[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [total, setTotal] = useState<number | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
@@ -40,20 +40,20 @@ export default function WebhookCallsPage() {
 
   useEffect(() => {
     setLoading(true);
-    getWebhookCalls({ 'page[number]': page, 'page[size]': pageSize, search: debouncedSearch })
+    getUsers({ 'page[number]': page, 'page[size]': pageSize, search: debouncedSearch })
       .then((res) => {
-        setWebhookCalls(res.data);
+        setUsers(res.data);
         setTotal(res.meta.total);
         setLastPage(res.meta.last_page);
       })
-      .catch((err) => setError(err.message ?? 'Failed to load webhook calls.'))
+      .catch((err) => setError(err.message ?? 'Failed to load users.'))
       .finally(() => setLoading(false));
   }, [page, pageSize, debouncedSearch]);
 
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-2xl font-semibold">Webhook Calls</h1>
+        <h1 className="text-2xl font-semibold">Users</h1>
         {total !== null && (
           <p className="text-muted-foreground text-sm">{total} total</p>
         )}
@@ -64,7 +64,7 @@ export default function WebhookCallsPage() {
       <SearchInput
         value={search}
         onChange={setSearch}
-        placeholder="Search webhook calls…"
+        placeholder="Search users…"
         className="max-w-sm"
       />
 
@@ -73,8 +73,10 @@ export default function WebhookCallsPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
-              <TableHead>URL</TableHead>
-              <TableHead>Received At</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead className="text-right">Workspaces</TableHead>
+              <TableHead>Support access</TableHead>
+              <TableHead>Joined</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -82,40 +84,47 @@ export default function WebhookCallsPage() {
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 4 }).map((_, j) => (
+                  {Array.from({ length: 6 }).map((_, j) => (
                     <TableCell key={j}>
                       <Skeleton className="h-4 w-full" />
                     </TableCell>
                   ))}
                 </TableRow>
               ))
-            ) : webhookCalls.length === 0 ? (
+            ) : users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-muted-foreground text-center">
-                  No webhook calls found.
+                <TableCell colSpan={6} className="text-muted-foreground text-center">
+                  No users found.
                 </TableCell>
               </TableRow>
             ) : (
-              webhookCalls.map((webhookCall) => (
+              users.map((user) => (
                 <TableRow
-                  key={webhookCall.id}
+                  key={user.id}
                   className="cursor-pointer"
-                  onClick={() => router.push(`${APP_ROUTES.WEBHOOK_CALLS}/${webhookCall.id}`)}
+                  onClick={() => router.push(APP_ROUTES.USER(user.id))}
                 >
-                  <TableCell>
-                    <Badge variant="secondary" className="capitalize">
-                      {webhookCall.name}
-                    </Badge>
+                  <TableCell className="font-medium">
+                    <span className="flex items-center gap-2">
+                      {user.name}
+                      {user.is_admin && <Badge variant="outline">Admin</Badge>}
+                    </span>
                   </TableCell>
-                  <TableCell className="text-muted-foreground max-w-xs truncate font-mono text-xs">
-                    {webhookCall.url}
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell className="text-right">{user.tenants_count ?? 0}</TableCell>
+                  <TableCell>
+                    {user.support_access_enabled ? (
+                      <Badge>Enabled</Badge>
+                    ) : (
+                      <span className="text-muted-foreground text-sm">Disabled</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">
-                    {formatDateTime(webhookCall.created_at)}
+                    {formatDate(user.created_at)}
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <Button asChild variant="outline" size="sm">
-                      <Link href={`${APP_ROUTES.WEBHOOK_CALLS}/${webhookCall.id}`}>View</Link>
+                      <Link href={APP_ROUTES.USER(user.id)}>View</Link>
                     </Button>
                   </TableCell>
                 </TableRow>
