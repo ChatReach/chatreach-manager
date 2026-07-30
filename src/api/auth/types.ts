@@ -33,12 +33,22 @@ export interface TwoFactorRecoveryCodesResponse {
   recovery_codes: string[];
 }
 
+export interface UpdateUserBody {
+  firstname?: string;
+  lastname?: string;
+  email?: string;
+  current_password?: string;
+  new_password?: string;
+  new_password_confirmation?: string;
+}
+
 export interface User {
   id: string;
   firstname: string;
   lastname: string;
   name: string;
   email: string;
+  pending_email?: string | null;
   created_at: string;
   updated_at: string;
   profile_photo_url: string;

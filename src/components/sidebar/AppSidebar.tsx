@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, CreditCard, Webhook, Settings, User, LogOut, Sun, Moon, Monitor } from 'lucide-react';
+import { LayoutDashboard, Users, CreditCard, Webhook, User, LogOut, Sun, Moon, Monitor } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 import {
@@ -41,7 +41,6 @@ const navItems = [
   { label: 'Tenants', href: APP_ROUTES.TENANTS, icon: Users },
   { label: 'Subscriptions', href: APP_ROUTES.SUBSCRIPTIONS, icon: CreditCard },
   { label: 'Webhook Calls', href: APP_ROUTES.WEBHOOK_CALLS, icon: Webhook },
-  { label: 'Settings', href: APP_ROUTES.SETTINGS_SECURITY, icon: Settings },
 ];
 
 const AppSidebar = () => {
