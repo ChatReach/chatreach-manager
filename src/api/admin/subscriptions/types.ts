@@ -99,6 +99,10 @@ export interface TenantSubscriptionState {
   subscription: TenantSubscription | null;
 }
 
+export interface StartSubscriptionResponse {
+  url: string;
+}
+
 export interface SwapPayload {
   plan: string;
   interval: BillingInterval;

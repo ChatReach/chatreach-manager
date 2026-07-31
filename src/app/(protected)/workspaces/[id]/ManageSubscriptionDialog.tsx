@@ -9,6 +9,7 @@ import {
   getTenantSubscription,
   removeTenantAddon,
   resumeTenantSubscription,
+  startTenantSubscription,
   swapTenantSubscription,
 } from '@/api/admin/subscriptions';
 import type {
@@ -51,6 +52,7 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
   const [selectedPlan, setSelectedPlan] = useState<string>('');
   const [selectedInterval, setSelectedInterval] = useState<BillingInterval>('monthly');
   const [addonDeltas, setAddonDeltas] = useState<Record<string, number>>({});
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -67,7 +69,10 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
   }, [tenantId]);
 
   useEffect(() => {
-    if (open) load();
+    if (open) {
+      setCheckoutUrl(null);
+      load();
+    }
   }, [open, load]);
 
   const run = async (action: () => Promise<unknown>, successMessage: string) => {
@@ -90,6 +95,56 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
   const currentQuantity = (limit: PlanLimit) =>
     state?.subscription?.addons.find((a) => a.plan_limit === limit)?.quantity ?? 0;
 
+  const startSubscription = async () => {
+    setBusy(true);
+    try {
+      const { url } = await startTenantSubscription(tenantId, {
+        plan: selectedPlan,
+        interval: selectedInterval,
+      });
+      setCheckoutUrl(url);
+      toast.success('Checkout link generated.');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to generate checkout link.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const planIntervalFields = (
+    <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex flex-1 flex-col gap-1.5">
+        <Label htmlFor="plan">Plan</Label>
+        <select
+          id="plan"
+          value={selectedPlan}
+          onChange={(e) => setSelectedPlan(e.target.value)}
+          className={selectClass}
+        >
+          {plans
+            .filter((p) => p.is_active)
+            .map((p) => (
+              <option key={p.id} value={p.slug}>
+                {p.name}
+              </option>
+            ))}
+        </select>
+      </div>
+      <div className="flex flex-1 flex-col gap-1.5">
+        <Label htmlFor="interval">Interval</Label>
+        <select
+          id="interval"
+          value={selectedInterval}
+          onChange={(e) => setSelectedInterval(e.target.value as BillingInterval)}
+          className={selectClass}
+        >
+          <option value="monthly">Monthly</option>
+          <option value="annual">Annual</option>
+        </select>
+      </div>
+    </div>
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
@@ -106,10 +161,37 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
             <Skeleton className="h-24" />
           </div>
         ) : !state?.subscribed ? (
-          <p className="text-muted-foreground text-sm">
-            This workspace has no active Stripe subscription. Plan changes can only be made once the workspace
-            has subscribed.
-          </p>
+          <div className="flex flex-col gap-4">
+            <p className="text-muted-foreground text-sm">
+              This workspace has no active Stripe subscription
+              {state?.on_trial ? ' and is currently on trial' : ''}. Pick a plan to generate a Stripe Checkout
+              link the workspace can use to subscribe.
+            </p>
+            {planIntervalFields}
+            <Button className="w-fit" disabled={busy || !selectedPlan} onClick={startSubscription}>
+              Generate Checkout Link
+            </Button>
+            {checkoutUrl && (
+              <div className="flex flex-col gap-2 rounded-md border p-3">
+                <p className="text-muted-foreground text-sm">
+                  Share this link with the workspace to complete payment. The subscription activates once they
+                  check out.
+                </p>
+                <p className="text-xs break-all">{checkoutUrl}</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-fit"
+                  onClick={() => {
+                    navigator.clipboard.writeText(checkoutUrl);
+                    toast.success('Link copied.');
+                  }}
+                >
+                  Copy Link
+                </Button>
+              </div>
+            )}
+          </div>
         ) : (
           <div className="flex flex-col gap-5">
             <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -128,37 +210,7 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
 
             <div className="flex flex-col gap-3">
               <h3 className="text-sm font-medium">Change Plan</h3>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <div className="flex flex-1 flex-col gap-1.5">
-                  <Label htmlFor="swap-plan">Plan</Label>
-                  <select
-                    id="swap-plan"
-                    value={selectedPlan}
-                    onChange={(e) => setSelectedPlan(e.target.value)}
-                    className={selectClass}
-                  >
-                    {plans
-                      .filter((p) => p.is_active)
-                      .map((p) => (
-                        <option key={p.id} value={p.slug}>
-                          {p.name}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-                <div className="flex flex-1 flex-col gap-1.5">
-                  <Label htmlFor="swap-interval">Interval</Label>
-                  <select
-                    id="swap-interval"
-                    value={selectedInterval}
-                    onChange={(e) => setSelectedInterval(e.target.value as BillingInterval)}
-                    className={selectClass}
-                  >
-                    <option value="monthly">Monthly</option>
-                    <option value="annual">Annual</option>
-                  </select>
-                </div>
-              </div>
+              {planIntervalFields}
               <Button
                 className="w-fit"
                 disabled={busy}

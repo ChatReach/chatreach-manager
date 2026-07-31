@@ -5,6 +5,7 @@ import type {
   AddonQuantityPayload,
   PlanPayload,
   SubscriptionAddon,
+  StartSubscriptionResponse,
   SubscriptionPlan,
   SwapPayload,
   TenantSubscriptionState,
@@ -45,6 +46,12 @@ export const deleteSubscriptionAddon = (id: string) =>
 
 export const getTenantSubscription = (tenantId: string) =>
   fetchClient<TenantSubscriptionState>(API_ROUTES.ADMIN.TENANT_SUBSCRIPTION(tenantId));
+
+export const startTenantSubscription = (tenantId: string, data: SwapPayload) =>
+  fetchClient<StartSubscriptionResponse>(API_ROUTES.ADMIN.TENANT_SUBSCRIPTION(tenantId), {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 
 export const swapTenantSubscription = (tenantId: string, data: SwapPayload) =>
   fetchClient<void>(API_ROUTES.ADMIN.TENANT_SUBSCRIPTION_SWAP(tenantId), {
