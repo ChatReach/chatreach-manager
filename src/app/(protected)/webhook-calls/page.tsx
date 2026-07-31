@@ -1,18 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { getWebhookCalls } from '@/api/admin/webhookCalls';
 import type { WebhookCall } from '@/api/admin/webhookCalls/types';
 import Pagination from '@/components/common/Pagination';
 import SearchInput from '@/components/common/SearchInput';
+import WebhookCallDrawer from '@/components/webhook-calls/WebhookCallDrawer';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { formatDateTime } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { APP_ROUTES } from '@/constants/routes';
 import {
   Table,
   TableBody,
@@ -23,8 +21,8 @@ import {
 } from '@/components/ui/table';
 
 export default function WebhookCallsPage() {
-  const router = useRouter();
   const [webhookCalls, setWebhookCalls] = useState<WebhookCall[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [total, setTotal] = useState<number | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
@@ -100,7 +98,7 @@ export default function WebhookCallsPage() {
                 <TableRow
                   key={webhookCall.id}
                   className="cursor-pointer"
-                  onClick={() => router.push(`${APP_ROUTES.WEBHOOK_CALLS}/${webhookCall.id}`)}
+                  onClick={() => setSelectedId(webhookCall.id)}
                 >
                   <TableCell>
                     <Badge variant="secondary" className="capitalize">
@@ -113,9 +111,9 @@ export default function WebhookCallsPage() {
                   <TableCell className="text-muted-foreground text-sm">
                     {formatDateTime(webhookCall.created_at)}
                   </TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <Button asChild variant="outline" size="sm">
-                      <Link href={`${APP_ROUTES.WEBHOOK_CALLS}/${webhookCall.id}`}>View</Link>
+                  <TableCell>
+                    <Button variant="outline" size="sm">
+                      View
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -137,6 +135,8 @@ export default function WebhookCallsPage() {
           }}
         />
       </div>
+
+      <WebhookCallDrawer id={selectedId} onClose={() => setSelectedId(null)} />
     </div>
   );
 }

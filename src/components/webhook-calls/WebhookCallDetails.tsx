@@ -1,15 +1,12 @@
 'use client';
 
-import { useEffect, useState, use } from 'react';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { getWebhookCall } from '@/api/admin/webhookCalls';
 import type { WebhookCall } from '@/api/admin/webhookCalls/types';
 import JsonViewer from '@/components/common/JsonViewer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateTime } from '@/lib/utils';
-import { APP_ROUTES } from '@/constants/routes';
 
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -22,54 +19,40 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
   );
 }
 
-export default function WebhookCallDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export function useWebhookCall(id: string) {
   const [webhookCall, setWebhookCall] = useState<WebhookCall | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    setLoading(true);
+    setError(null);
     getWebhookCall(id)
       .then(setWebhookCall)
       .catch((err) => setError(err.message ?? 'Failed to load webhook call.'))
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) {
-    return (
-      <div className="flex flex-col gap-6">
-        <Skeleton className="h-6 w-32" />
-        <Skeleton className="h-8 w-64" />
-        <div className="grid gap-4 md:grid-cols-2">
-          {Array.from({ length: 2 }).map((_, i) => (
-            <Skeleton key={i} className="h-40" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  return { webhookCall, loading, error };
+}
 
-  if (error) {
-    return <p className="text-destructive text-sm">{error}</p>;
-  }
-
-  if (!webhookCall) return null;
-
+export function WebhookCallDetailsSkeleton() {
   return (
-    <div className="flex flex-col gap-6">
-      <Link
-        href={APP_ROUTES.WEBHOOK_CALLS}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-sm"
-      >
-        <ArrowLeft className="size-4" />
-        Back to Webhook Calls
-      </Link>
-
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold capitalize">{webhookCall.name}</h1>
-        <p className="text-muted-foreground text-sm break-all">{webhookCall.url}</p>
+    <div className="flex flex-col gap-4">
+      <Skeleton className="h-8 w-64" />
+      <div className="grid gap-4 md:grid-cols-2">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <Skeleton key={i} className="h-40" />
+        ))}
       </div>
+      <Skeleton className="h-40" />
+    </div>
+  );
+}
 
+export default function WebhookCallDetails({ webhookCall }: { webhookCall: WebhookCall }) {
+  return (
+    <div className="flex flex-col gap-4">
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
