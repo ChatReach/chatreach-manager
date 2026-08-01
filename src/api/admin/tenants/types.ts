@@ -16,6 +16,16 @@ export interface TenantMember {
 
 export type BetaAccessStatus = 'not_requested' | 'pending' | 'approved' | 'denied';
 
+export interface BillingAddress {
+  line1: string;
+  line2: string | null;
+  postal_code: string;
+  city: string;
+  state: string | null;
+  /** ISO 3166-1 alpha-2 country code. */
+  country: string;
+}
+
 export interface Tenant {
   id: string;
   reference: string;
@@ -30,6 +40,10 @@ export interface Tenant {
   beta_access_requested_at: string | null;
   monthly_spending_limit: number | null;
   has_exceeded_spending_limit: boolean;
+  billing_name: string | null;
+  billing_email: string | null;
+  billing_phone_number: string | null;
+  billing_address: BillingAddress | null;
   users?: TenantMember[];
   users_count: number;
   campaigns_count: number;
@@ -50,6 +64,15 @@ export interface CreateTenantPayload {
     lastname: string;
     email: string;
   };
+}
+
+export interface UpdateTenantPayload {
+  name?: string;
+  billing_name?: string | null;
+  billing_email?: string | null;
+  billing_phone_number?: string | null;
+  billing_address?: BillingAddress | null;
+  monthly_spending_limit?: number | null;
 }
 
 export interface UpdateBetaAccessPayload {

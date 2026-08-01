@@ -1,11 +1,12 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { use, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ShieldOff } from 'lucide-react';
 import { getUser } from '@/api/admin/users';
 import type { AdminUser } from '@/api/admin/users/types';
+import { EditUserDialog } from './EditUserDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,13 +39,18 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
   const [user, setUser] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
 
-  useEffect(() => {
+  const load = useCallback(() => {
     getUser(id)
       .then(setUser)
       .catch((err) => setError(err.message ?? 'Failed to load user.'))
       .finally(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   if (loading) {
     return (
@@ -81,7 +87,17 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
       <div className="flex items-center gap-3 flex-wrap">
         <h1 className="text-2xl font-semibold">{user.name}</h1>
         {user.is_admin && <Badge variant="outline">Admin</Badge>}
+        <Button variant="outline" size="sm" className="ml-auto" onClick={() => setEditOpen(true)}>
+          Edit
+        </Button>
       </div>
+
+      <EditUserDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        user={user}
+        onChanged={load}
+      />
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>

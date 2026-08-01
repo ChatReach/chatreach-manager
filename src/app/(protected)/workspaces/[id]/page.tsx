@@ -22,6 +22,7 @@ import {
 import { formatDate, formatDateTime } from '@/lib/utils';
 import { APP_ROUTES } from '@/constants/routes';
 import { BetaAccessCard } from './BetaAccessCard';
+import { EditWorkspaceDialog } from './EditWorkspaceDialog';
 import { ManageSubscriptionDialog } from './ManageSubscriptionDialog';
 
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
@@ -51,6 +52,7 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [manageOpen, setManageOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   const loadTenant = () => {
     getTenant(id)
@@ -102,6 +104,9 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
         {tenant.deleted_at && (
           <Badge variant="destructive">Deleted</Badge>
         )}
+        <Button variant="outline" size="sm" className="ml-auto" onClick={() => setEditOpen(true)}>
+          Edit
+        </Button>
       </div>
 
       {/* Organization/tenant details */}
@@ -164,6 +169,33 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
           requestedAt={tenant.beta_access_requested_at}
           onChanged={loadTenant}
         />
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Billing</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-3 sm:grid-cols-2">
+            <DetailRow label="Billing name" value={tenant.billing_name} />
+            <DetailRow label="Billing email" value={tenant.billing_email} />
+            <DetailRow label="Billing phone" value={tenant.billing_phone_number} />
+            <DetailRow
+              label="Billing address"
+              value={
+                tenant.billing_address
+                  ? [
+                      tenant.billing_address.line1,
+                      tenant.billing_address.line2,
+                      `${tenant.billing_address.postal_code} ${tenant.billing_address.city}`,
+                      tenant.billing_address.state,
+                      tenant.billing_address.country,
+                    ]
+                      .filter(Boolean)
+                      .join(', ')
+                  : null
+              }
+            />
+          </CardContent>
+        </Card>
       </div>
 
       {/* Statistics */}
@@ -234,6 +266,13 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
         open={manageOpen}
         onOpenChange={setManageOpen}
         tenantId={tenant.id}
+        onChanged={loadTenant}
+      />
+
+      <EditWorkspaceDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        tenant={tenant}
         onChanged={loadTenant}
       />
     </div>

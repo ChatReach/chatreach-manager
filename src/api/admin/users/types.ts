@@ -30,6 +30,15 @@ export interface AdminUser {
   updated_at?: string;
 }
 
+export interface UpdateUserPayload {
+  firstname?: string;
+  lastname?: string;
+  email?: string;
+  phone_number?: string | null;
+  /** True keeps the user subscribed; false stamps marketing_unsubscribed_at. */
+  marketing_emails?: boolean;
+}
+
 export interface AdminUsersResponse {
   data: AdminUser[];
   links: {

@@ -13,6 +13,7 @@ export const API_ROUTES = {
   ADMIN: {
     USERS: '/admin/users',
     USER: (id: string) => `/admin/users/${id}`,
+    USER_SEND_PASSWORD_RESET: (id: string) => `/admin/users/${id}/send-password-reset`,
     TENANTS: '/admin/tenants',
     TENANT: (id: string) => `/admin/tenants/${id}`,
     TENANT_BETA_ACCESS: (id: string) => `/admin/tenants/${id}/beta-access`,
