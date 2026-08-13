@@ -25,6 +25,16 @@ import { AddonFormDialog } from './AddonFormDialog';
 import { humanize } from './labels';
 import { PlanFormDialog } from './PlanFormDialog';
 
+const formatEuros = (amount: number | null) =>
+  amount === null
+    ? '—'
+    : new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(amount);
+
 function StripeLink({ label, url }: { label: string; url: string | null }) {
   if (!url) {
     return <span className="text-muted-foreground text-xs">{label}: —</span>;
@@ -150,6 +160,10 @@ export default function SubscriptionsPage() {
                       <Badge variant="outline">Inactive</Badge>
                     )}
                   </div>
+                  <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                    <span>{formatEuros(plan.monthly_price)} / mo</span>
+                    <span>{formatEuros(plan.annual_price)} / yr</span>
+                  </div>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                     <StripeLink label="Monthly" url={plan.stripe_monthly_url} />
                     <StripeLink label="Annual" url={plan.stripe_annual_url} />
@@ -210,6 +224,7 @@ export default function SubscriptionsPage() {
                           <TableHead>Limit</TableHead>
                           <TableHead className="text-right">Per Unit</TableHead>
                           <TableHead className="text-right">Max</TableHead>
+                          <TableHead>Price</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead>Stripe</TableHead>
                           <TableHead />
@@ -218,7 +233,7 @@ export default function SubscriptionsPage() {
                       <TableBody>
                         {plan.addons.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={6} className="text-muted-foreground text-center text-sm">
+                            <TableCell colSpan={7} className="text-muted-foreground text-center text-sm">
                               No addons.
                             </TableCell>
                           </TableRow>
@@ -228,6 +243,12 @@ export default function SubscriptionsPage() {
                               <TableCell className="font-medium">{humanize(addon.plan_limit)}</TableCell>
                               <TableCell className="text-right">{addon.amount_per_unit}</TableCell>
                               <TableCell className="text-right">{addon.max_quantity}</TableCell>
+                              <TableCell className="text-muted-foreground text-xs">
+                                <div className="flex flex-col">
+                                  <span>{formatEuros(addon.monthly_price)} / mo</span>
+                                  <span>{formatEuros(addon.annual_price)} / yr</span>
+                                </div>
+                              </TableCell>
                               <TableCell>
                                 {addon.is_active ? (
                                   <Badge variant="secondary">Active</Badge>

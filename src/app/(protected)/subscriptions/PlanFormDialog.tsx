@@ -38,6 +38,8 @@ interface FormInputs {
   slug: string;
   is_active: boolean;
   sort_order: number;
+  monthly_price: string;
+  annual_price: string;
   stripe_monthly_price_id: string;
   stripe_annual_price_id: string;
   limits: Record<PlanLimit, string>;
@@ -49,6 +51,8 @@ const buildDefaults = (plan?: SubscriptionPlan | null): FormInputs => ({
   slug: plan?.slug ?? '',
   is_active: plan?.is_active ?? true,
   sort_order: plan?.sort_order ?? 0,
+  monthly_price: plan?.monthly_price != null ? String(plan.monthly_price) : '',
+  annual_price: plan?.annual_price != null ? String(plan.annual_price) : '',
   stripe_monthly_price_id: plan?.stripe_monthly_price_id ?? '',
   stripe_annual_price_id: plan?.stripe_annual_price_id ?? '',
   limits: Object.fromEntries(
@@ -91,6 +95,8 @@ export function PlanFormDialog({ open, onOpenChange, plan, onSaved }: Props) {
       slug: data.slug,
       is_active: data.is_active,
       sort_order: Number(data.sort_order) || 0,
+      monthly_price: data.monthly_price !== '' ? Number(data.monthly_price) : null,
+      annual_price: data.annual_price !== '' ? Number(data.annual_price) : null,
       stripe_monthly_price_id: data.stripe_monthly_price_id || null,
       stripe_annual_price_id: data.stripe_annual_price_id || null,
       limits,
@@ -136,6 +142,31 @@ export function PlanFormDialog({ open, onOpenChange, plan, onSaved }: Props) {
               <Label htmlFor="slug">Slug</Label>
               <Input id="slug" {...register('slug', { required: 'Slug is required.' })} />
               {errors.slug && <p className="text-destructive text-xs">{errors.slug.message}</p>}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="monthly_price">Monthly Price (EUR)</Label>
+              <Input
+                id="monthly_price"
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder="e.g. 69"
+                {...register('monthly_price')}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="annual_price">Annual Price (EUR)</Label>
+              <Input
+                id="annual_price"
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder="e.g. 690"
+                {...register('annual_price')}
+              />
             </div>
           </div>
 

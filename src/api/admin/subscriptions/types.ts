@@ -29,6 +29,8 @@ export interface SubscriptionAddon {
   amount_per_unit: number;
   max_quantity: number;
   is_active: boolean;
+  monthly_price: number | null;
+  annual_price: number | null;
   stripe_monthly_price_id: string | null;
   stripe_annual_price_id: string | null;
   stripe_monthly_url: string | null;
@@ -43,6 +45,8 @@ export interface SubscriptionPlan {
   slug: string;
   is_active: boolean;
   sort_order: number;
+  monthly_price: number | null;
+  annual_price: number | null;
   limits: Partial<Record<PlanLimit, number>>;
   features: Partial<Record<PlanFeature, boolean>>;
   stripe_monthly_price_id: string | null;
@@ -59,6 +63,8 @@ export interface PlanPayload {
   slug: string;
   is_active: boolean;
   sort_order?: number;
+  monthly_price?: number | null;
+  annual_price?: number | null;
   stripe_monthly_price_id?: string | null;
   stripe_annual_price_id?: string | null;
   limits?: Partial<Record<PlanLimit, number>>;
@@ -70,6 +76,8 @@ export interface AddonPayload {
   amount_per_unit: number;
   max_quantity: number;
   is_active: boolean;
+  monthly_price?: number | null;
+  annual_price?: number | null;
   stripe_monthly_price_id?: string | null;
   stripe_annual_price_id?: string | null;
 }

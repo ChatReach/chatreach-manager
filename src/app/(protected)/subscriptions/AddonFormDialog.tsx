@@ -37,6 +37,8 @@ interface FormInputs {
   amount_per_unit: number;
   max_quantity: number;
   is_active: boolean;
+  monthly_price: string;
+  annual_price: string;
   stripe_monthly_price_id: string;
   stripe_annual_price_id: string;
 }
@@ -46,6 +48,8 @@ const buildDefaults = (addon?: SubscriptionAddon | null): FormInputs => ({
   amount_per_unit: addon?.amount_per_unit ?? 1,
   max_quantity: addon?.max_quantity ?? 1,
   is_active: addon?.is_active ?? true,
+  monthly_price: addon?.monthly_price != null ? String(addon.monthly_price) : '',
+  annual_price: addon?.annual_price != null ? String(addon.annual_price) : '',
   stripe_monthly_price_id: addon?.stripe_monthly_price_id ?? '',
   stripe_annual_price_id: addon?.stripe_annual_price_id ?? '',
 });
@@ -76,6 +80,8 @@ export function AddonFormDialog({ open, onOpenChange, planId, addon, onSaved }: 
       amount_per_unit: Number(data.amount_per_unit),
       max_quantity: Number(data.max_quantity),
       is_active: data.is_active,
+      monthly_price: data.monthly_price !== '' ? Number(data.monthly_price) : null,
+      annual_price: data.annual_price !== '' ? Number(data.annual_price) : null,
       stripe_monthly_price_id: data.stripe_monthly_price_id || null,
       stripe_annual_price_id: data.stripe_annual_price_id || null,
     };
@@ -145,6 +151,31 @@ export function AddonFormDialog({ open, onOpenChange, planId, addon, onSaved }: 
                 {...register('max_quantity', { valueAsNumber: true, required: true, min: 1 })}
               />
               {errors.max_quantity && <p className="text-destructive text-xs">Must be at least 1.</p>}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="addon_monthly_price">Monthly Price (EUR)</Label>
+              <Input
+                id="addon_monthly_price"
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder="e.g. 20"
+                {...register('monthly_price')}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="addon_annual_price">Annual Price (EUR)</Label>
+              <Input
+                id="addon_annual_price"
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder="e.g. 200"
+                {...register('annual_price')}
+              />
             </div>
           </div>
 
