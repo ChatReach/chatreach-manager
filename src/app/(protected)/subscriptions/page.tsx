@@ -159,6 +159,11 @@ export default function SubscriptionsPage() {
                     ) : (
                       <Badge variant="outline">Inactive</Badge>
                     )}
+                    {plan.is_public ? (
+                      <Badge variant="secondary">Public</Badge>
+                    ) : (
+                      <Badge variant="outline">Private</Badge>
+                    )}
                   </div>
                   <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                     <span>{formatEuros(plan.monthly_price)} / mo</span>

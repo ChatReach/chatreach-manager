@@ -44,6 +44,7 @@ export interface SubscriptionPlan {
   name: string;
   slug: string;
   is_active: boolean;
+  is_public: boolean;
   sort_order: number;
   monthly_price: number | null;
   annual_price: number | null;
@@ -62,6 +63,7 @@ export interface PlanPayload {
   name: string;
   slug: string;
   is_active: boolean;
+  is_public: boolean;
   sort_order?: number;
   monthly_price?: number | null;
   annual_price?: number | null;

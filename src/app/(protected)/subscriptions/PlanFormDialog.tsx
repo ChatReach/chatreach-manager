@@ -37,6 +37,7 @@ interface FormInputs {
   name: string;
   slug: string;
   is_active: boolean;
+  is_public: boolean;
   sort_order: number;
   monthly_price: string;
   annual_price: string;
@@ -50,6 +51,7 @@ const buildDefaults = (plan?: SubscriptionPlan | null): FormInputs => ({
   name: plan?.name ?? '',
   slug: plan?.slug ?? '',
   is_active: plan?.is_active ?? true,
+  is_public: plan?.is_public ?? true,
   sort_order: plan?.sort_order ?? 0,
   monthly_price: plan?.monthly_price != null ? String(plan.monthly_price) : '',
   annual_price: plan?.annual_price != null ? String(plan.annual_price) : '',
@@ -78,6 +80,7 @@ export function PlanFormDialog({ open, onOpenChange, plan, onSaved }: Props) {
 
   const features = watch('features');
   const isActive = watch('is_active');
+  const isPublic = watch('is_public');
 
   useEffect(() => {
     if (open) reset(buildDefaults(plan));
@@ -94,6 +97,7 @@ export function PlanFormDialog({ open, onOpenChange, plan, onSaved }: Props) {
       name: data.name,
       slug: data.slug,
       is_active: data.is_active,
+      is_public: data.is_public,
       sort_order: Number(data.sort_order) || 0,
       monthly_price: data.monthly_price !== '' ? Number(data.monthly_price) : null,
       annual_price: data.annual_price !== '' ? Number(data.annual_price) : null,
@@ -186,15 +190,28 @@ export function PlanFormDialog({ open, onOpenChange, plan, onSaved }: Props) {
               <Label htmlFor="sort_order">Sort Order</Label>
               <Input id="sort_order" type="number" min={0} {...register('sort_order', { valueAsNumber: true })} />
             </div>
-            <div className="flex items-end gap-2 pb-2">
-              <Checkbox
-                id="is_active"
-                checked={isActive}
-                onCheckedChange={(checked) => setValue('is_active', !!checked)}
-              />
-              <Label htmlFor="is_active">Active</Label>
+            <div className="flex items-end gap-4 pb-2">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="is_active"
+                  checked={isActive}
+                  onCheckedChange={(checked) => setValue('is_active', !!checked)}
+                />
+                <Label htmlFor="is_active">Active</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="is_public"
+                  checked={isPublic}
+                  onCheckedChange={(checked) => setValue('is_public', !!checked)}
+                />
+                <Label htmlFor="is_public">Public</Label>
+              </div>
             </div>
           </div>
+          <p className="text-muted-foreground -mt-2 text-xs">
+            Private plans stay usable for workspaces already on them, but are hidden from the plan picker.
+          </p>
 
           <div className="flex flex-col gap-2">
             <Label>Limits</Label>
