@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { ExternalLink, Pencil, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -21,9 +22,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { APP_ROUTES } from '@/constants/routes';
 import { AddonFormDialog } from './AddonFormDialog';
 import { humanize } from './labels';
-import { PlanFormDialog } from './PlanFormDialog';
 
 const formatEuros = (amount: number | null) =>
   amount === null
@@ -57,9 +58,6 @@ export default function SubscriptionsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [planDialogOpen, setPlanDialogOpen] = useState(false);
-  const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null);
-
   const [addonDialogOpen, setAddonDialogOpen] = useState(false);
   const [addonPlanId, setAddonPlanId] = useState<string>('');
   const [editingAddon, setEditingAddon] = useState<SubscriptionAddon | null>(null);
@@ -75,16 +73,6 @@ export default function SubscriptionsPage() {
   useEffect(() => {
     load();
   }, [load]);
-
-  const openCreatePlan = () => {
-    setEditingPlan(null);
-    setPlanDialogOpen(true);
-  };
-
-  const openEditPlan = (plan: SubscriptionPlan) => {
-    setEditingPlan(plan);
-    setPlanDialogOpen(true);
-  };
 
   const openCreateAddon = (planId: string) => {
     setAddonPlanId(planId);
@@ -127,9 +115,11 @@ export default function SubscriptionsPage() {
           <h1 className="text-2xl font-semibold">Subscription Plans</h1>
           <p className="text-muted-foreground text-sm">Manage plans, addons and their Stripe prices.</p>
         </div>
-        <Button onClick={openCreatePlan}>
-          <Plus className="size-4" />
-          Create Plan
+        <Button asChild>
+          <Link href={APP_ROUTES.SUBSCRIPTIONS_PLAN_NEW}>
+            <Plus className="size-4" />
+            Create Plan
+          </Link>
         </Button>
       </div>
 
@@ -175,9 +165,11 @@ export default function SubscriptionsPage() {
                   </div>
                 </div>
                 <div className="flex shrink-0 gap-2">
-                  <Button variant="outline" size="sm" onClick={() => openEditPlan(plan)}>
-                    <Pencil className="size-4" />
-                    Edit
+                  <Button asChild variant="outline" size="sm">
+                    <Link href={APP_ROUTES.SUBSCRIPTIONS_PLAN_EDIT(plan.id)}>
+                      <Pencil className="size-4" />
+                      Edit
+                    </Link>
                   </Button>
                   <Button variant="ghost" size="icon-sm" onClick={() => handleDeletePlan(plan)}>
                     <Trash2 className="size-4" />
@@ -297,13 +289,6 @@ export default function SubscriptionsPage() {
           ))}
         </div>
       )}
-
-      <PlanFormDialog
-        open={planDialogOpen}
-        onOpenChange={setPlanDialogOpen}
-        plan={editingPlan}
-        onSaved={load}
-      />
 
       {addonPlanId && (
         <AddonFormDialog

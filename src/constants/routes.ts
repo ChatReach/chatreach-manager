@@ -7,6 +7,8 @@ export const APP_ROUTES = {
   WORKSPACES: '/workspaces',
   WORKSPACES_CREATE: '/workspaces/create',
   SUBSCRIPTIONS: '/subscriptions',
+  SUBSCRIPTIONS_PLAN_NEW: '/subscriptions/plans/new',
+  SUBSCRIPTIONS_PLAN_EDIT: (id: string) => `/subscriptions/plans/${id}/edit`,
   WEBHOOK_CALLS: '/webhook-calls',
   PROFILE: '/profile',
 };

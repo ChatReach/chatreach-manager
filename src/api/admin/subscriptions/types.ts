@@ -54,6 +54,7 @@ export interface SubscriptionPlan {
   stripe_annual_price_id: string | null;
   stripe_monthly_url: string | null;
   stripe_annual_url: string | null;
+  shopify_plan_handle: string | null;
   addons: SubscriptionAddon[];
   created_at: string;
   updated_at: string;
@@ -69,6 +70,7 @@ export interface PlanPayload {
   annual_price?: number | null;
   stripe_monthly_price_id?: string | null;
   stripe_annual_price_id?: string | null;
+  shopify_plan_handle?: string | null;
   limits?: Partial<Record<PlanLimit, number>>;
   features?: Partial<Record<PlanFeature, boolean>>;
 }

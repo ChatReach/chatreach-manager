@@ -14,6 +14,9 @@ import type {
 export const getSubscriptionPlans = () =>
   fetchClient<SubscriptionPlan[]>(API_ROUTES.ADMIN.SUBSCRIPTION_PLANS);
 
+export const getSubscriptionPlan = (id: string) =>
+  fetchClient<SubscriptionPlan>(API_ROUTES.ADMIN.SUBSCRIPTION_PLAN(id));
+
 export const createSubscriptionPlan = (data: PlanPayload) =>
   fetchClient<SubscriptionPlan>(API_ROUTES.ADMIN.SUBSCRIPTION_PLANS, {
     method: 'POST',
