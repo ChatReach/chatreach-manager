@@ -38,7 +38,7 @@ export default function WebhookCallsPage() {
 
   useEffect(() => {
     setLoading(true);
-    getWebhookCalls({ 'page[number]': page, 'page[size]': pageSize, search: debouncedSearch })
+    getWebhookCalls({ 'page[number]': page, 'page[size]': pageSize, search: debouncedSearch, sort: 'created_at:desc' })
       .then((res) => {
         setWebhookCalls(res.data);
         setTotal(res.meta.total);
