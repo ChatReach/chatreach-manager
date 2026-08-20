@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { APP_ROUTES } from '@/constants/routes';
 import { humanize } from '../labels';
 
@@ -29,8 +30,11 @@ interface Props {
 interface FormInputs {
   name: string;
   slug: string;
+  description: string;
   is_active: boolean;
   is_public: boolean;
+  is_popular: boolean;
+  is_trial: boolean;
   sort_order: number;
   monthly_price: string;
   annual_price: string;
@@ -44,8 +48,11 @@ interface FormInputs {
 const buildDefaults = (plan?: SubscriptionPlan | null): FormInputs => ({
   name: plan?.name ?? '',
   slug: plan?.slug ?? '',
+  description: plan?.description ?? '',
   is_active: plan?.is_active ?? true,
   is_public: plan?.is_public ?? true,
+  is_popular: plan?.is_popular ?? false,
+  is_trial: plan?.is_trial ?? false,
   sort_order: plan?.sort_order ?? 0,
   monthly_price: plan?.monthly_price != null ? String(plan.monthly_price) : '',
   annual_price: plan?.annual_price != null ? String(plan.annual_price) : '',
@@ -75,6 +82,8 @@ export function PlanForm({ plan }: Props) {
   const features = watch('features');
   const isActive = watch('is_active');
   const isPublic = watch('is_public');
+  const isPopular = watch('is_popular');
+  const isTrial = watch('is_trial');
 
   const onSubmit = async (data: FormInputs) => {
     const limits: Partial<Record<PlanLimit, number>> = {};
@@ -86,8 +95,11 @@ export function PlanForm({ plan }: Props) {
     const payload: PlanPayload = {
       name: data.name,
       slug: data.slug,
+      description: data.description || null,
       is_active: data.is_active,
       is_public: data.is_public,
+      is_popular: data.is_popular,
+      is_trial: data.is_trial,
       sort_order: Number(data.sort_order) || 0,
       monthly_price: data.monthly_price !== '' ? Number(data.monthly_price) : null,
       annual_price: data.annual_price !== '' ? Number(data.annual_price) : null,
@@ -149,6 +161,19 @@ export function PlanForm({ plan }: Props) {
               </div>
             </div>
 
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                rows={2}
+                placeholder="e.g. Everything you need to grow."
+                {...register('description')}
+              />
+              <p className="text-muted-foreground text-xs">
+                Shown under the plan name on the customer plan picker.
+              </p>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="sort_order">Sort Order</Label>
@@ -179,8 +204,29 @@ export function PlanForm({ plan }: Props) {
               </div>
             </div>
 
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="is_popular"
+                  checked={isPopular}
+                  onCheckedChange={(checked) => setValue('is_popular', !!checked)}
+                />
+                <Label htmlFor="is_popular">Most popular</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="is_trial"
+                  checked={isTrial}
+                  onCheckedChange={(checked) => setValue('is_trial', !!checked)}
+                />
+                <Label htmlFor="is_trial">Trial plan</Label>
+              </div>
+            </div>
+
             <p className="text-muted-foreground text-xs">
-              Private plans stay usable for workspaces already on them, but are hidden from the plan picker.
+              Private plans stay usable for workspaces already on them, but are hidden from the plan picker. Only
+              one plan can be the most popular plan and one can be the trial plan &mdash; checking either here
+              unsets it on the plan that had it.
             </p>
           </CardContent>
         </Card>

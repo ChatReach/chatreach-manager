@@ -43,8 +43,11 @@ export interface SubscriptionPlan {
   id: string;
   name: string;
   slug: string;
+  description: string | null;
   is_active: boolean;
   is_public: boolean;
+  is_popular: boolean;
+  is_trial: boolean;
   sort_order: number;
   monthly_price: number | null;
   annual_price: number | null;
@@ -63,8 +66,11 @@ export interface SubscriptionPlan {
 export interface PlanPayload {
   name: string;
   slug: string;
+  description?: string | null;
   is_active: boolean;
   is_public: boolean;
+  is_popular: boolean;
+  is_trial: boolean;
   sort_order?: number;
   monthly_price?: number | null;
   annual_price?: number | null;

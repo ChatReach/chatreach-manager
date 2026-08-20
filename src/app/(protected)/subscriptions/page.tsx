@@ -154,6 +154,8 @@ export default function SubscriptionsPage() {
                     ) : (
                       <Badge variant="outline">Private</Badge>
                     )}
+                    {plan.is_popular && <Badge variant="secondary">Most popular</Badge>}
+                    {plan.is_trial && <Badge variant="secondary">Trial plan</Badge>}
                   </div>
                   <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                     <span>{formatEuros(plan.monthly_price)} / mo</span>
