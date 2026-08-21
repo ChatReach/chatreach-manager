@@ -77,6 +77,7 @@ export default function UsersPage() {
               <TableHead className="text-right">Workspaces</TableHead>
               <TableHead>Support access</TableHead>
               <TableHead>Joined</TableHead>
+              <TableHead>Last active</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -84,7 +85,7 @@ export default function UsersPage() {
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 6 }).map((_, j) => (
+                  {Array.from({ length: 7 }).map((_, j) => (
                     <TableCell key={j}>
                       <Skeleton className="h-4 w-full" />
                     </TableCell>
@@ -93,7 +94,7 @@ export default function UsersPage() {
               ))
             ) : users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-muted-foreground text-center">
+                <TableCell colSpan={7} className="text-muted-foreground text-center">
                   No users found.
                 </TableCell>
               </TableRow>
@@ -121,6 +122,9 @@ export default function UsersPage() {
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">
                     {formatDate(user.created_at)}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-sm">
+                    {user.last_activity_at ? formatDate(user.last_activity_at) : '—'}
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <Button asChild variant="outline" size="sm">

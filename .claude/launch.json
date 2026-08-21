@@ -4,8 +4,9 @@
     {
       "name": "chatreach-manager",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["dev"],
-      "port": 3000
+      "runtimeArgs": ["ssldev"],
+      "port": 3001,
+      "url": "https://chatreach.test:3001"
     }
   ]
 }

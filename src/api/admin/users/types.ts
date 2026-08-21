@@ -28,6 +28,7 @@ export interface AdminUser {
   marketing_unsubscribed_at?: string | null;
   two_factor_enabled?: boolean;
   updated_at?: string;
+  last_activity_at?: string | null;
 }
 
 export interface UpdateUserPayload {

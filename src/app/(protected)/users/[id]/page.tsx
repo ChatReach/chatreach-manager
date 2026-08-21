@@ -125,6 +125,9 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
               <span className="font-mono text-xs">{user.id}</span>
             } />
             <DetailRow label="Joined" value={formatDateTime(user.created_at)} />
+            <DetailRow label="Last active" value={
+              user.last_activity_at ? formatDateTime(user.last_activity_at) : 'Never'
+            } />
             <DetailRow label="Last updated" value={
               user.updated_at ? formatDateTime(user.updated_at) : null
             } />
