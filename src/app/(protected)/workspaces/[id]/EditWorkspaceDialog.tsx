@@ -1,11 +1,16 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import { updateTenant } from '@/api/admin/tenants';
-import type { BillingAddress, Tenant, UpdateTenantPayload } from '@/api/admin/tenants/types';
+import { getTenantBilling, updateTenant } from '@/api/admin/tenants';
+import type {
+  BillingAddress,
+  Tenant,
+  TenantBilling,
+  UpdateTenantPayload,
+} from '@/api/admin/tenants/types';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -44,6 +49,8 @@ type Inputs = {
 const addressFields = ['line1', 'line2', 'postal_code', 'city', 'state', 'country'] as const;
 
 export function EditWorkspaceDialog({ open, onOpenChange, tenant, onChanged }: Props) {
+  const [billing, setBilling] = useState<TenantBilling | null>(null);
+
   const {
     formState: { errors, isSubmitting },
     handleSubmit,
@@ -51,37 +58,58 @@ export function EditWorkspaceDialog({ open, onOpenChange, tenant, onChanged }: P
     reset,
   } = useForm<Inputs>();
 
+  // Billing details are only served by the audit-logged endpoint, so the form has
+  // to fetch them before it can prefill or diff against them.
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      setBilling(null);
+      return;
+    }
 
-    const address = tenant.billing_address;
+    let active = true;
 
-    reset({
-      name: tenant.name,
-      billing_name: tenant.billing_name ?? '',
-      billing_email: tenant.billing_email ?? '',
-      billing_phone_number: tenant.billing_phone_number ?? '',
-      monthly_spending_limit:
-        tenant.monthly_spending_limit != null ? String(tenant.monthly_spending_limit) : '',
-      line1: address?.line1 ?? '',
-      line2: address?.line2 ?? '',
-      postal_code: address?.postal_code ?? '',
-      city: address?.city ?? '',
-      state: address?.state ?? '',
-      country: address?.country ?? '',
-    });
-  }, [open, tenant, reset]);
+    getTenantBilling(tenant.id)
+      .then((data) => {
+        if (!active) return;
+
+        setBilling(data);
+        reset({
+          name: tenant.name,
+          billing_name: data.billing_name ?? '',
+          billing_email: data.billing_email ?? '',
+          billing_phone_number: data.billing_phone_number ?? '',
+          monthly_spending_limit:
+            tenant.monthly_spending_limit != null ? String(tenant.monthly_spending_limit) : '',
+          line1: data.billing_address?.line1 ?? '',
+          line2: data.billing_address?.line2 ?? '',
+          postal_code: data.billing_address?.postal_code ?? '',
+          city: data.billing_address?.city ?? '',
+          state: data.billing_address?.state ?? '',
+          country: data.billing_address?.country ?? '',
+        });
+      })
+      .catch((error) => {
+        toast.error((error as Error)?.message || 'Failed to load billing details.');
+        onOpenChange(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [open, tenant, reset, onOpenChange]);
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
+    if (!billing) return;
+
     const payload: UpdateTenantPayload = {
       ...(data.name !== tenant.name && { name: data.name }),
-      ...(data.billing_name !== (tenant.billing_name ?? '') && {
+      ...(data.billing_name !== (billing.billing_name ?? '') && {
         billing_name: data.billing_name || null,
       }),
-      ...(data.billing_email !== (tenant.billing_email ?? '') && {
+      ...(data.billing_email !== (billing.billing_email ?? '') && {
         billing_email: data.billing_email || null,
       }),
-      ...(data.billing_phone_number !== (tenant.billing_phone_number ?? '') && {
+      ...(data.billing_phone_number !== (billing.billing_phone_number ?? '') && {
         billing_phone_number: data.billing_phone_number || null,
       }),
     };
@@ -102,7 +130,7 @@ export function EditWorkspaceDialog({ open, onOpenChange, tenant, onChanged }: P
     };
 
     const addressChanged = addressFields.some(
-      (field) => (address[field] ?? '') !== (tenant.billing_address?.[field] ?? ''),
+      (field) => (address[field] ?? '') !== (billing.billing_address?.[field] ?? ''),
     );
 
     if (addressChanged) {
@@ -231,7 +259,7 @@ export function EditWorkspaceDialog({ open, onOpenChange, tenant, onChanged }: P
           </div>
 
           <DialogFooter>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || !billing}>
               {isSubmitting ? 'Saving...' : 'Save'}
             </Button>
           </DialogFooter>

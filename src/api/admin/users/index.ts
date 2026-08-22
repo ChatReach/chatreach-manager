@@ -1,12 +1,20 @@
 import { fetchClient } from '@/api/fetchClient';
 import { API_ROUTES } from '@/constants/api';
-import type { AdminUser, AdminUsersResponse, UpdateUserPayload } from './types';
+import type {
+  AdminUser,
+  AdminUsersResponse,
+  UpdateUserPayload,
+  UserPersonalData,
+} from './types';
 
 export const getUsers = (params?: Record<string, string | number>) =>
   fetchClient<AdminUsersResponse>(API_ROUTES.ADMIN.USERS, { params });
 
 export const getUser = (id: string) =>
   fetchClient<AdminUser>(API_ROUTES.ADMIN.USER(id));
+
+export const getUserPersonalData = (id: string) =>
+  fetchClient<UserPersonalData>(API_ROUTES.ADMIN.USER_PERSONAL_DATA(id));
 
 export const updateUser = (id: string, data: UpdateUserPayload) =>
   fetchClient<AdminUser>(API_ROUTES.ADMIN.USER(id), {

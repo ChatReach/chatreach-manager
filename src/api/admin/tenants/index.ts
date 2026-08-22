@@ -3,6 +3,7 @@ import { API_ROUTES } from '@/constants/api';
 import type {
   CreateTenantPayload,
   Tenant,
+  TenantBilling,
   TenantsResponse,
   UpdateBetaAccessPayload,
   UpdateTenantPayload,
@@ -13,6 +14,9 @@ export const getTenants = (params?: Record<string, string | number>) =>
 
 export const getTenant = (id: string) =>
   fetchClient<Tenant>(API_ROUTES.ADMIN.TENANT(id));
+
+export const getTenantBilling = (id: string) =>
+  fetchClient<TenantBilling>(API_ROUTES.ADMIN.TENANT_BILLING(id));
 
 export const createTenant = (data: CreateTenantPayload) =>
   fetchClient<Tenant>(API_ROUTES.ADMIN.TENANTS, { method: 'POST', body: JSON.stringify(data) });

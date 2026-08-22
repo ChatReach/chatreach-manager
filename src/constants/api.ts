@@ -14,12 +14,15 @@ export const API_ROUTES = {
     USERS: '/admin/users',
     USER: (id: string) => `/admin/users/${id}`,
     USER_SEND_PASSWORD_RESET: (id: string) => `/admin/users/${id}/send-password-reset`,
+    USER_PERSONAL_DATA: (id: string) => `/admin/users/${id}/personal-data`,
     TENANTS: '/admin/tenants',
     TENANT: (id: string) => `/admin/tenants/${id}`,
+    TENANT_BILLING: (id: string) => `/admin/tenants/${id}/billing`,
     TENANT_BETA_ACCESS: (id: string) => `/admin/tenants/${id}/beta-access`,
 
     WEBHOOK_CALLS: '/admin/webhook-calls',
     WEBHOOK_CALL: (id: string) => `/admin/webhook-calls/${id}`,
+    WEBHOOK_CALL_HEADERS: (id: string) => `/admin/webhook-calls/${id}/headers`,
 
     SUBSCRIPTION_PLANS: '/admin/subscription-plans',
     SUBSCRIPTION_PLAN: (id: string) => `/admin/subscription-plans/${id}`,

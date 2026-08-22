@@ -120,7 +120,7 @@ export default function WorkspacesPage() {
                     {tenant.reference}
                   </TableCell>
                   <TableCell>
-                    {tenant.owner.firstname} {tenant.owner.lastname}
+                    {tenant.owner.firstname}
                   </TableCell>
                   <TableCell>
                     {tenant.subscription_plan ? (

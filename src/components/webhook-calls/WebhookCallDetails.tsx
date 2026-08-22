@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getWebhookCall } from '@/api/admin/webhookCalls';
+import { getWebhookCall, getWebhookCallHeaders } from '@/api/admin/webhookCalls';
 import type { WebhookCall } from '@/api/admin/webhookCalls/types';
 import JsonViewer from '@/components/common/JsonViewer';
+import { RevealGate } from '@/components/RevealGate';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateTime } from '@/lib/utils';
@@ -89,7 +90,13 @@ export default function WebhookCallDetails({ webhookCall }: { webhookCall: Webho
           <CardTitle className="text-base">Headers</CardTitle>
         </CardHeader>
         <CardContent>
-          <JsonViewer value={webhookCall.headers} />
+          <RevealGate
+            label="View headers"
+            description="Headers are hidden. Viewing them is logged."
+            load={() => getWebhookCallHeaders(webhookCall.id)}
+          >
+            {(data) => <JsonViewer value={data.headers} />}
+          </RevealGate>
         </CardContent>
       </Card>
     </div>

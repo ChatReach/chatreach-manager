@@ -1,14 +1,12 @@
 export interface TenantOwner {
   id: string;
   firstname: string;
-  lastname: string;
   email: string;
 }
 
 export interface TenantMember {
   id: string;
   firstname: string;
-  lastname: string;
   email: string;
   profile_photo_url?: string;
   role: string | null;
@@ -40,10 +38,6 @@ export interface Tenant {
   beta_access_requested_at: string | null;
   monthly_spending_limit: number | null;
   has_exceeded_spending_limit: boolean;
-  billing_name: string | null;
-  billing_email: string | null;
-  billing_phone_number: string | null;
-  billing_address: BillingAddress | null;
   users?: TenantMember[];
   users_count: number;
   campaigns_count: number;
@@ -52,6 +46,14 @@ export interface Tenant {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+}
+
+/** Served only by the billing endpoint, which audit-logs every read. */
+export interface TenantBilling {
+  billing_name: string | null;
+  billing_email: string | null;
+  billing_phone_number: string | null;
+  billing_address: BillingAddress | null;
 }
 
 export interface CreateTenantPayload {

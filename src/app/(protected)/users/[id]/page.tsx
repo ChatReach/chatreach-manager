@@ -4,9 +4,10 @@ import { use, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ShieldOff } from 'lucide-react';
-import { getUser } from '@/api/admin/users';
+import { getUser, getUserPersonalData } from '@/api/admin/users';
 import type { AdminUser } from '@/api/admin/users/types';
 import { EditUserDialog } from './EditUserDialog';
+import { RevealGate } from '@/components/RevealGate';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -85,7 +86,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
       </Link>
 
       <div className="flex items-center gap-3 flex-wrap">
-        <h1 className="text-2xl font-semibold">{user.name}</h1>
+        <h1 className="text-2xl font-semibold">{user.firstname}</h1>
         {user.is_admin && <Badge variant="outline">Admin</Badge>}
         <Button variant="outline" size="sm" className="ml-auto" onClick={() => setEditOpen(true)}>
           Edit
@@ -106,9 +107,21 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
           </CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-2">
             <DetailRow label="First name" value={user.firstname} />
-            <DetailRow label="Last name" value={user.lastname} />
             <DetailRow label="Email" value={user.email} />
-            <DetailRow label="Phone number" value={user.phone_number} />
+            <div className="sm:col-span-2">
+              <RevealGate
+                label="View personal data"
+                description="Last name and phone number are hidden. Viewing them is logged."
+                load={() => getUserPersonalData(id)}
+              >
+                {(personalData) => (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <DetailRow label="Last name" value={personalData.lastname} />
+                    <DetailRow label="Phone number" value={personalData.phone_number} />
+                  </div>
+                )}
+              </RevealGate>
+            </div>
             <DetailRow label="Email verified" value={
               user.email_verified_at ? formatDateTime(user.email_verified_at) : 'No'
             } />

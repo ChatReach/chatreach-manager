@@ -9,10 +9,14 @@ export interface WebhookCall {
   name: string;
   url: string;
   payload: Record<string, unknown> | null;
-  headers: Record<string, unknown> | null;
   exception: WebhookCallException | null;
   created_at: string;
   updated_at: string;
+}
+
+/** Served only by the headers endpoint, which audit-logs every read. */
+export interface WebhookCallHeaders {
+  headers: Record<string, unknown> | null;
 }
 
 export interface WebhookCallsResponse {

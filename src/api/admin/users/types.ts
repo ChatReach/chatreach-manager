@@ -7,8 +7,6 @@ export interface AdminUserTenant {
 export interface AdminUser {
   id: string;
   firstname: string;
-  lastname: string;
-  name: string;
   email: string;
   is_admin: boolean;
   profile_photo_url?: string;
@@ -23,12 +21,18 @@ export interface AdminUser {
   tenants?: AdminUserTenant[];
 
   // Only returned by the show endpoint; listings stay minimal.
-  phone_number?: string | null;
   email_verified_at?: string | null;
   marketing_unsubscribed_at?: string | null;
   two_factor_enabled?: boolean;
   updated_at?: string;
   last_activity_at?: string | null;
+}
+
+/** Served only by the personal-data endpoint, which audit-logs every read. */
+export interface UserPersonalData {
+  lastname: string;
+  name: string;
+  phone_number: string | null;
 }
 
 export interface UpdateUserPayload {

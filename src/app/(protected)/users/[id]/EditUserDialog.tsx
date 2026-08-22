@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import { sendPasswordResetEmail, updateUser } from '@/api/admin/users';
-import type { AdminUser, UpdateUserPayload } from '@/api/admin/users/types';
+import { getUserPersonalData, sendPasswordResetEmail, updateUser } from '@/api/admin/users';
+import type { AdminUser, UpdateUserPayload, UserPersonalData } from '@/api/admin/users/types';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -37,6 +37,7 @@ type Inputs = {
 
 export function EditUserDialog({ open, onOpenChange, user, onChanged }: Props) {
   const [sendingReset, setSendingReset] = useState(false);
+  const [personalData, setPersonalData] = useState<UserPersonalData | null>(null);
 
   const {
     control,
@@ -48,24 +49,47 @@ export function EditUserDialog({ open, onOpenChange, user, onChanged }: Props) {
 
   const subscribedToMarketing = !user.marketing_unsubscribed_at;
 
+  // Last name and phone number are only served by the audit-logged endpoint,
+  // so the form has to fetch them before it can prefill or diff against them.
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      setPersonalData(null);
+      return;
+    }
 
-    reset({
-      firstname: user.firstname,
-      lastname: user.lastname,
-      email: user.email,
-      phone_number: user.phone_number ?? '',
-      marketing_emails: subscribedToMarketing,
-    });
-  }, [open, user, subscribedToMarketing, reset]);
+    let active = true;
+
+    getUserPersonalData(user.id)
+      .then((data) => {
+        if (!active) return;
+
+        setPersonalData(data);
+        reset({
+          firstname: user.firstname,
+          lastname: data.lastname,
+          email: user.email,
+          phone_number: data.phone_number ?? '',
+          marketing_emails: subscribedToMarketing,
+        });
+      })
+      .catch((error) => {
+        toast.error((error as Error)?.message || 'Failed to load user details.');
+        onOpenChange(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [open, user, subscribedToMarketing, reset, onOpenChange]);
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
+    if (!personalData) return;
+
     const payload: UpdateUserPayload = {
       ...(data.firstname !== user.firstname && { firstname: data.firstname }),
-      ...(data.lastname !== user.lastname && { lastname: data.lastname }),
+      ...(data.lastname !== personalData.lastname && { lastname: data.lastname }),
       ...(data.email !== user.email && { email: data.email }),
-      ...(data.phone_number !== (user.phone_number ?? '') && {
+      ...(data.phone_number !== (personalData.phone_number ?? '') && {
         phone_number: data.phone_number || null,
       }),
       ...(data.marketing_emails !== subscribedToMarketing && {
@@ -185,7 +209,7 @@ export function EditUserDialog({ open, onOpenChange, user, onChanged }: Props) {
             >
               {sendingReset ? 'Sending...' : 'Send password reset'}
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || !personalData}>
               {isSubmitting ? 'Saving...' : 'Save'}
             </Button>
           </DialogFooter>

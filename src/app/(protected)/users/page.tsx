@@ -107,7 +107,7 @@ export default function UsersPage() {
                 >
                   <TableCell className="font-medium">
                     <span className="flex items-center gap-2">
-                      {user.name}
+                      {user.firstname}
                       {user.is_admin && <Badge variant="outline">Admin</Badge>}
                     </span>
                   </TableCell>

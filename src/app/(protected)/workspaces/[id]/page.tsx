@@ -5,8 +5,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { use } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { getTenant } from '@/api/admin/tenants';
+import { getTenant, getTenantBilling } from '@/api/admin/tenants';
 import type { Tenant } from '@/api/admin/tenants/types';
+import { RevealGate } from '@/components/RevealGate';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -174,26 +175,36 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
           <CardHeader>
             <CardTitle className="text-base">Billing</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-3 sm:grid-cols-2">
-            <DetailRow label="Billing name" value={tenant.billing_name} />
-            <DetailRow label="Billing email" value={tenant.billing_email} />
-            <DetailRow label="Billing phone" value={tenant.billing_phone_number} />
-            <DetailRow
-              label="Billing address"
-              value={
-                tenant.billing_address
-                  ? [
-                      tenant.billing_address.line1,
-                      tenant.billing_address.line2,
-                      `${tenant.billing_address.postal_code} ${tenant.billing_address.city}`,
-                      tenant.billing_address.state,
-                      tenant.billing_address.country,
-                    ]
-                      .filter(Boolean)
-                      .join(', ')
-                  : null
-              }
-            />
+          <CardContent>
+            <RevealGate
+              label="View billing details"
+              description="Billing details are hidden. Viewing them is logged."
+              load={() => getTenantBilling(id)}
+            >
+              {(billing) => (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <DetailRow label="Billing name" value={billing.billing_name} />
+                  <DetailRow label="Billing email" value={billing.billing_email} />
+                  <DetailRow label="Billing phone" value={billing.billing_phone_number} />
+                  <DetailRow
+                    label="Billing address"
+                    value={
+                      billing.billing_address
+                        ? [
+                            billing.billing_address.line1,
+                            billing.billing_address.line2,
+                            `${billing.billing_address.postal_code} ${billing.billing_address.city}`,
+                            billing.billing_address.state,
+                            billing.billing_address.country,
+                          ]
+                            .filter(Boolean)
+                            .join(', ')
+                        : null
+                    }
+                  />
+                </div>
+              )}
+            </RevealGate>
           </CardContent>
         </Card>
       </div>
@@ -235,7 +246,7 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
                         className="hover:underline"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {member.firstname} {member.lastname}
+                        {member.firstname}
                       </Link>
                     </TableCell>
                     <TableCell>{member.email}</TableCell>

@@ -66,6 +66,10 @@ export default function WebhookCallsPage() {
         className="max-w-sm"
       />
 
+      <p className="text-muted-foreground text-sm">
+        Only webhook calls received in the last 24 hours can be viewed.
+      </p>
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>

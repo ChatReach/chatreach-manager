@@ -183,15 +183,13 @@ export default function CreateWorkspacePage() {
                   getOptionValue={(user) => user.id}
                   renderOption={(user) => (
                     <div className="flex flex-col">
-                      <span className="font-medium">
-                        {user.firstname} {user.lastname}
-                      </span>
+                      <span className="font-medium">{user.firstname}</span>
                       <span className="text-muted-foreground text-xs">{user.email}</span>
                     </div>
                   )}
                   renderValue={(user) => (
                     <>
-                      {user.firstname} {user.lastname}
+                      {user.firstname}
                       <span className="text-muted-foreground"> — {user.email}</span>
                     </>
                   )}
