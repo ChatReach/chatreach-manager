@@ -16,6 +16,7 @@ export const PLAN_FEATURES = [
   'shopify',
   'webhooks',
   'api_access',
+  'remove_touchpoint_widget_branding',
 ] as const;
 
 export type PlanFeature = (typeof PLAN_FEATURES)[number];
