@@ -28,6 +28,11 @@ export interface AdminUser {
   last_activity_at?: string | null;
 }
 
+export interface StartImpersonationResponse {
+  consume_url: string;
+  expires_at: string;
+}
+
 /** Served only by the personal-data endpoint, which audit-logs every read. */
 export interface UserPersonalData {
   lastname: string;

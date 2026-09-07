@@ -15,6 +15,8 @@ export const API_ROUTES = {
     USER: (id: string) => `/admin/users/${id}`,
     USER_SEND_PASSWORD_RESET: (id: string) => `/admin/users/${id}/send-password-reset`,
     USER_PERSONAL_DATA: (id: string) => `/admin/users/${id}/personal-data`,
+    USER_IMPERSONATE: (id: string) => `/admin/users/${id}/impersonate`,
+    IMPERSONATION_END: (id: string) => `/admin/impersonation/${id}/end`,
     TENANTS: '/admin/tenants',
     TENANT: (id: string) => `/admin/tenants/${id}`,
     TENANT_BILLING: (id: string) => `/admin/tenants/${id}/billing`,

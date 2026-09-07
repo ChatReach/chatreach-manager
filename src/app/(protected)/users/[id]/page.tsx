@@ -7,6 +7,7 @@ import { ArrowLeft, ShieldOff } from 'lucide-react';
 import { getUser, getUserPersonalData } from '@/api/admin/users';
 import type { AdminUser } from '@/api/admin/users/types';
 import { EditUserDialog } from './EditUserDialog';
+import { ImpersonateDialog } from '@/components/ImpersonateDialog';
 import { RevealGate } from '@/components/RevealGate';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -165,9 +166,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
                   This user granted support access, so you can sign in as them.
                 </p>
                 <div>
-                  <Button variant="outline" size="sm" disabled title="Coming soon">
-                    Impersonate
-                  </Button>
+                  <ImpersonateDialog userId={user.id} userName={user.firstname} />
                 </div>
               </>
             ) : (

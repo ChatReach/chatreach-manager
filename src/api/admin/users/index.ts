@@ -3,6 +3,7 @@ import { API_ROUTES } from '@/constants/api';
 import type {
   AdminUser,
   AdminUsersResponse,
+  StartImpersonationResponse,
   UpdateUserPayload,
   UserPersonalData,
 } from './types';
@@ -25,6 +26,12 @@ export const updateUser = (id: string, data: UpdateUserPayload) =>
 export const sendPasswordResetEmail = (id: string) =>
   fetchClient<{ status: string }>(API_ROUTES.ADMIN.USER_SEND_PASSWORD_RESET(id), {
     method: 'POST',
+  });
+
+export const startImpersonation = (id: string, reason: string) =>
+  fetchClient<StartImpersonationResponse>(API_ROUTES.ADMIN.USER_IMPERSONATE(id), {
+    method: 'POST',
+    body: JSON.stringify({ reason }),
   });
 
 export const searchUsers = (search: string) =>
