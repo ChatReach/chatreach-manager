@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import {
   deleteSubscriptionAddon,
   deleteSubscriptionPlan,
+  getSharedAddons,
   getSubscriptionPlans,
 } from '@/api/admin/subscriptions';
 import type { SubscriptionAddon, SubscriptionPlan } from '@/api/admin/subscriptions/types';
@@ -24,6 +25,7 @@ import {
 } from '@/components/ui/table';
 import { APP_ROUTES } from '@/constants/routes';
 import { AddonFormDialog } from './AddonFormDialog';
+import { AddonsTable } from './AddonsTable';
 import { humanize } from './labels';
 
 const formatEuros = (amount: number | null) =>
@@ -58,14 +60,18 @@ export default function SubscriptionsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [sharedAddons, setSharedAddons] = useState<SubscriptionAddon[]>([]);
   const [addonDialogOpen, setAddonDialogOpen] = useState(false);
-  const [addonPlanId, setAddonPlanId] = useState<string>('');
+  const [addonPlanId, setAddonPlanId] = useState<string | null>(null);
   const [editingAddon, setEditingAddon] = useState<SubscriptionAddon | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
-    getSubscriptionPlans()
-      .then(setPlans)
+    Promise.all([getSubscriptionPlans(), getSharedAddons()])
+      .then(([nextPlans, nextSharedAddons]) => {
+        setPlans(nextPlans);
+        setSharedAddons(nextSharedAddons);
+      })
       .catch((err) => setError(err.message ?? 'Failed to load plans.'))
       .finally(() => setLoading(false));
   }, []);
@@ -74,13 +80,13 @@ export default function SubscriptionsPage() {
     load();
   }, [load]);
 
-  const openCreateAddon = (planId: string) => {
+  const openCreateAddon = (planId: string | null) => {
     setAddonPlanId(planId);
     setEditingAddon(null);
     setAddonDialogOpen(true);
   };
 
-  const openEditAddon = (planId: string, addon: SubscriptionAddon) => {
+  const openEditAddon = (planId: string | null, addon: SubscriptionAddon) => {
     setAddonPlanId(planId);
     setEditingAddon(addon);
     setAddonDialogOpen(true);
@@ -98,7 +104,7 @@ export default function SubscriptionsPage() {
   };
 
   const handleDeleteAddon = async (addon: SubscriptionAddon) => {
-    if (!window.confirm(`Delete the ${humanize(addon.plan_limit)} addon?`)) return;
+    if (!window.confirm(`Delete the ${humanize(addon.type)} addon?`)) return;
     try {
       await deleteSubscriptionAddon(addon.id);
       toast.success('Addon deleted.');
@@ -216,75 +222,12 @@ export default function SubscriptionsPage() {
                       Add Addon
                     </Button>
                   </div>
-                  <div className="rounded-md border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Limit</TableHead>
-                          <TableHead className="text-right">Per Unit</TableHead>
-                          <TableHead className="text-right">Max</TableHead>
-                          <TableHead>Price</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Stripe</TableHead>
-                          <TableHead />
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {plan.addons.length === 0 ? (
-                          <TableRow>
-                            <TableCell colSpan={7} className="text-muted-foreground text-center text-sm">
-                              No addons.
-                            </TableCell>
-                          </TableRow>
-                        ) : (
-                          plan.addons.map((addon) => (
-                            <TableRow key={addon.id}>
-                              <TableCell className="font-medium">{humanize(addon.plan_limit)}</TableCell>
-                              <TableCell className="text-right">{addon.amount_per_unit}</TableCell>
-                              <TableCell className="text-right">{addon.max_quantity}</TableCell>
-                              <TableCell className="text-muted-foreground text-xs">
-                                <div className="flex flex-col">
-                                  <span>{formatEuros(addon.monthly_price)} / mo</span>
-                                  <span>{formatEuros(addon.annual_price)} / yr</span>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                {addon.is_active ? (
-                                  <Badge variant="secondary">Active</Badge>
-                                ) : (
-                                  <Badge variant="outline">Inactive</Badge>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex flex-col gap-0.5">
-                                  <StripeLink label="Monthly" url={addon.stripe_monthly_url} />
-                                  <StripeLink label="Annual" url={addon.stripe_annual_url} />
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex justify-end gap-1">
-                                  <Button
-                                    variant="ghost"
-                                    size="icon-sm"
-                                    onClick={() => openEditAddon(plan.id, addon)}
-                                  >
-                                    <Pencil className="size-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon-sm"
-                                    onClick={() => handleDeleteAddon(addon)}
-                                  >
-                                    <Trash2 className="size-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
+                  <AddonsTable
+                    addons={plan.addons}
+                    emptyLabel="No addons."
+                    onEdit={(addon) => openEditAddon(plan.id, addon)}
+                    onDelete={handleDeleteAddon}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -292,7 +235,30 @@ export default function SubscriptionsPage() {
         </div>
       )}
 
-      {addonPlanId && (
+      {!loading && (
+        <Card>
+          <CardHeader className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold">Shared add-ons</h2>
+              <p className="text-muted-foreground text-sm">Sold on top of every plan.</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => openCreateAddon(null)}>
+              <Plus className="size-4" />
+              Add Addon
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <AddonsTable
+              addons={sharedAddons}
+              emptyLabel="No shared add-ons."
+              onEdit={(addon) => openEditAddon(null, addon)}
+              onDelete={handleDeleteAddon}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {addonDialogOpen && (
         <AddonFormDialog
           open={addonDialogOpen}
           onOpenChange={setAddonDialogOpen}

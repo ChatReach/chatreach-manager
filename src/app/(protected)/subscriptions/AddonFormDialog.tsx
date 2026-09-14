@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { createSubscriptionAddon, updateSubscriptionAddon } from '@/api/admin/subscriptions';
+import { createSharedAddon, createSubscriptionAddon, updateSubscriptionAddon } from '@/api/admin/subscriptions';
 import {
+  PLAN_FEATURES,
   PLAN_LIMITS,
   type AddonPayload,
+  type PlanFeature,
   type PlanLimit,
   type SubscriptionAddon,
 } from '@/api/admin/subscriptions/types';
@@ -27,13 +29,16 @@ import { humanize } from './labels';
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  planId: string;
+  /** Null creates an addon that is sold on top of every plan. */
+  planId: string | null;
   addon?: SubscriptionAddon | null;
   onSaved: () => void;
 }
 
 interface FormInputs {
+  kind: 'limit' | 'feature';
   plan_limit: PlanLimit;
+  plan_feature: PlanFeature;
   amount_per_unit: number;
   max_quantity: number;
   is_active: boolean;
@@ -44,7 +49,9 @@ interface FormInputs {
 }
 
 const buildDefaults = (addon?: SubscriptionAddon | null): FormInputs => ({
+  kind: addon?.plan_feature ? 'feature' : 'limit',
   plan_limit: addon?.plan_limit ?? PLAN_LIMITS[0],
+  plan_feature: addon?.plan_feature ?? PLAN_FEATURES[0],
   amount_per_unit: addon?.amount_per_unit ?? 1,
   max_quantity: addon?.max_quantity ?? 1,
   is_active: addon?.is_active ?? true,
@@ -67,18 +74,25 @@ export function AddonFormDialog({ open, onOpenChange, planId, addon, onSaved }: 
     formState: { errors },
   } = useForm<FormInputs>({ defaultValues: buildDefaults(addon) });
 
+  const kind = watch('kind');
   const planLimit = watch('plan_limit');
+  const planFeature = watch('plan_feature');
   const isActive = watch('is_active');
+  const isFeature = kind === 'feature';
 
   useEffect(() => {
     if (open) reset(buildDefaults(addon));
   }, [open, addon, reset]);
 
   const onSubmit = async (data: FormInputs) => {
+    const sellsFeature = data.kind === 'feature';
+
     const payload: AddonPayload = {
-      plan_limit: data.plan_limit,
-      amount_per_unit: Number(data.amount_per_unit),
-      max_quantity: Number(data.max_quantity),
+      plan_limit: sellsFeature ? null : data.plan_limit,
+      plan_feature: sellsFeature ? data.plan_feature : null,
+      // A feature addon is bought once, so it has no per-unit amount to configure.
+      amount_per_unit: sellsFeature ? 1 : Number(data.amount_per_unit),
+      max_quantity: sellsFeature ? 1 : Number(data.max_quantity),
       is_active: data.is_active,
       monthly_price: data.monthly_price !== '' ? Number(data.monthly_price) : null,
       annual_price: data.annual_price !== '' ? Number(data.annual_price) : null,
@@ -92,7 +106,7 @@ export function AddonFormDialog({ open, onOpenChange, planId, addon, onSaved }: 
         await updateSubscriptionAddon(addon.id, payload);
         toast.success('Addon updated.');
       } else {
-        await createSubscriptionAddon(planId, payload);
+        await (planId ? createSubscriptionAddon(planId, payload) : createSharedAddon(payload));
         toast.success('Addon created.');
       }
       onOpenChange(false);
@@ -110,28 +124,60 @@ export function AddonFormDialog({ open, onOpenChange, planId, addon, onSaved }: 
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit Addon' : 'Add Addon'}</DialogTitle>
           <DialogDescription>
-            Addons increase a plan limit. Paste the matching Stripe price IDs.
+            Addons sell extra units of a plan limit, or a single feature. Paste the matching Stripe
+            price IDs.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="plan_limit">Limit</Label>
+            <Label htmlFor="addon_kind">Sells</Label>
             <select
-              id="plan_limit"
-              value={planLimit}
-              onChange={(e) => setValue('plan_limit', e.target.value as PlanLimit)}
+              id="addon_kind"
+              value={kind}
+              onChange={(e) => setValue('kind', e.target.value as FormInputs['kind'])}
               className="border-input bg-background focus-visible:ring-ring h-9 rounded-md border px-3 text-sm focus-visible:ring-1 focus-visible:outline-none"
             >
-              {PLAN_LIMITS.map((limit) => (
-                <option key={limit} value={limit}>
-                  {humanize(limit)}
-                </option>
-              ))}
+              <option value="limit">Extra units of a limit</option>
+              <option value="feature">A feature</option>
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          {isFeature ? (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="plan_feature">Feature</Label>
+              <select
+                id="plan_feature"
+                value={planFeature}
+                onChange={(e) => setValue('plan_feature', e.target.value as PlanFeature)}
+                className="border-input bg-background focus-visible:ring-ring h-9 rounded-md border px-3 text-sm focus-visible:ring-1 focus-visible:outline-none"
+              >
+                {PLAN_FEATURES.map((feature) => (
+                  <option key={feature} value={feature}>
+                    {humanize(feature)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="plan_limit">Limit</Label>
+              <select
+                id="plan_limit"
+                value={planLimit}
+                onChange={(e) => setValue('plan_limit', e.target.value as PlanLimit)}
+                className="border-input bg-background focus-visible:ring-ring h-9 rounded-md border px-3 text-sm focus-visible:ring-1 focus-visible:outline-none"
+              >
+                {PLAN_LIMITS.map((limit) => (
+                  <option key={limit} value={limit}>
+                    {humanize(limit)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className={isFeature ? 'hidden' : 'grid grid-cols-2 gap-4'}>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="amount_per_unit">Amount per Unit</Label>
               <Input

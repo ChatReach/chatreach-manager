@@ -29,6 +29,7 @@ export const API_ROUTES = {
     SUBSCRIPTION_PLANS: '/admin/subscription-plans',
     SUBSCRIPTION_PLAN: (id: string) => `/admin/subscription-plans/${id}`,
     SUBSCRIPTION_PLAN_ADDONS: (planId: string) => `/admin/subscription-plans/${planId}/addons`,
+    ADDONS: '/admin/addons',
     SUBSCRIPTION_ADDON: (id: string) => `/admin/addons/${id}`,
 
     TENANT_SUBSCRIPTION: (tenantId: string) => `/admin/tenants/${tenantId}/subscription`,

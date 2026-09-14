@@ -32,6 +32,14 @@ export const updateSubscriptionPlan = (id: string, data: Partial<PlanPayload>) =
 export const deleteSubscriptionPlan = (id: string) =>
   fetchClient<void>(API_ROUTES.ADMIN.SUBSCRIPTION_PLAN(id), { method: 'DELETE' });
 
+export const getSharedAddons = () => fetchClient<SubscriptionAddon[]>(API_ROUTES.ADMIN.ADDONS);
+
+export const createSharedAddon = (data: AddonPayload) =>
+  fetchClient<SubscriptionAddon>(API_ROUTES.ADMIN.ADDONS, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+
 export const createSubscriptionAddon = (planId: string, data: AddonPayload) =>
   fetchClient<SubscriptionAddon>(API_ROUTES.ADMIN.SUBSCRIPTION_PLAN_ADDONS(planId), {
     method: 'POST',

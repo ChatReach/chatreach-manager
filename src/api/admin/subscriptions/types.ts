@@ -21,12 +21,18 @@ export const PLAN_FEATURES = [
 
 export type PlanFeature = (typeof PLAN_FEATURES)[number];
 
+/** An addon sells either extra units of a limit or a single feature. */
+export type AddonType = PlanLimit | PlanFeature;
+
 export type BillingInterval = 'monthly' | 'annual';
 
 export interface SubscriptionAddon {
   id: string;
-  subscription_plan_id: string;
-  plan_limit: PlanLimit;
+  /** Null when the addon is sold on top of any plan. */
+  subscription_plan_id: string | null;
+  type: AddonType;
+  plan_limit: PlanLimit | null;
+  plan_feature: PlanFeature | null;
   amount_per_unit: number;
   max_quantity: number;
   is_active: boolean;
@@ -83,7 +89,8 @@ export interface PlanPayload {
 }
 
 export interface AddonPayload {
-  plan_limit: PlanLimit;
+  plan_limit?: PlanLimit | null;
+  plan_feature?: PlanFeature | null;
   amount_per_unit: number;
   max_quantity: number;
   is_active: boolean;
@@ -94,7 +101,9 @@ export interface AddonPayload {
 }
 
 export interface TenantSubscriptionAddon {
-  plan_limit: PlanLimit;
+  type: AddonType;
+  plan_limit: PlanLimit | null;
+  plan_feature: PlanFeature | null;
   quantity: number;
   price: number | null;
 }
@@ -128,6 +137,7 @@ export interface SwapPayload {
 }
 
 export interface AddonQuantityPayload {
-  type: PlanLimit;
-  quantity: number;
+  type: AddonType;
+  /** Feature addons are a toggle, so they are bought and removed without a quantity. */
+  quantity?: number;
 }

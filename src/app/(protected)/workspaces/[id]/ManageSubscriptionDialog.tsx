@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import {
   addTenantAddon,
   cancelTenantSubscription,
+  getSharedAddons,
   getSubscriptionPlans,
   getTenantSubscription,
   removeTenantAddon,
@@ -13,8 +14,9 @@ import {
   swapTenantSubscription,
 } from '@/api/admin/subscriptions';
 import type {
+  AddonType,
   BillingInterval,
-  PlanLimit,
+  SubscriptionAddon,
   SubscriptionPlan,
   TenantSubscriptionState,
 } from '@/api/admin/subscriptions/types';
@@ -46,6 +48,7 @@ const selectClass =
 export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChanged }: Props) {
   const [state, setState] = useState<TenantSubscriptionState | null>(null);
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+  const [sharedAddons, setSharedAddons] = useState<SubscriptionAddon[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
 
@@ -56,10 +59,11 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
 
   const load = useCallback(() => {
     setLoading(true);
-    Promise.all([getTenantSubscription(tenantId), getSubscriptionPlans()])
-      .then(([sub, planList]) => {
+    Promise.all([getTenantSubscription(tenantId), getSubscriptionPlans(), getSharedAddons()])
+      .then(([sub, planList, sharedAddonList]) => {
         setState(sub);
         setPlans(planList);
+        setSharedAddons(sharedAddonList);
         if (sub.subscription?.plan) setSelectedPlan(sub.subscription.plan.slug);
         else if (planList[0]) setSelectedPlan(planList[0].slug);
         if (sub.subscription?.interval) setSelectedInterval(sub.subscription.interval);
@@ -90,10 +94,10 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
   };
 
   const activePlan = plans.find((p) => p.slug === state?.subscription?.plan?.slug);
-  const activeAddons = activePlan?.addons.filter((a) => a.is_active) ?? [];
+  const activeAddons = [...(activePlan?.addons ?? []), ...sharedAddons].filter((a) => a.is_active);
 
-  const currentQuantity = (limit: PlanLimit) =>
-    state?.subscription?.addons.find((a) => a.plan_limit === limit)?.quantity ?? 0;
+  const currentQuantity = (type: AddonType) =>
+    state?.subscription?.addons.find((a) => a.type === type)?.quantity ?? 0;
 
   const startSubscription = async () => {
     setBusy(true);
@@ -231,34 +235,42 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
                 <div className="flex flex-col gap-3">
                   <h3 className="text-sm font-medium">Addons</h3>
                   {activeAddons.map((addon) => {
-                    const key = addon.plan_limit;
-                    const delta = addonDeltas[key] ?? 1;
+                    const key = addon.type;
+                    const isFeature = addon.plan_feature !== null;
+                    // A feature addon is a toggle, so it is added and removed without a quantity.
+                    const delta = isFeature ? undefined : (addonDeltas[key] ?? 1);
+                    const isActive = currentQuantity(key) > 0;
+
                     return (
                       <div key={addon.id} className="flex flex-wrap items-center justify-between gap-2">
                         <div className="text-sm">
-                          <span className="font-medium">{humanize(addon.plan_limit)}</span>
+                          <span className="font-medium">{humanize(key)}</span>
                           <span className="text-muted-foreground">
                             {' '}
-                            — current {currentQuantity(addon.plan_limit)} / max {addon.max_quantity}
+                            {isFeature
+                              ? `— ${isActive ? 'active' : 'not active'}`
+                              : `— current ${currentQuantity(key)} / max ${addon.max_quantity}`}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Input
-                            type="number"
-                            min={1}
-                            value={delta}
-                            onChange={(e) =>
-                              setAddonDeltas((prev) => ({ ...prev, [key]: Number(e.target.value) }))
-                            }
-                            className="w-20"
-                          />
+                          {!isFeature && (
+                            <Input
+                              type="number"
+                              min={1}
+                              value={delta}
+                              onChange={(e) =>
+                                setAddonDeltas((prev) => ({ ...prev, [key]: Number(e.target.value) }))
+                              }
+                              className="w-20"
+                            />
+                          )}
                           <Button
                             variant="outline"
                             size="sm"
-                            disabled={busy}
+                            disabled={busy || (isFeature && isActive)}
                             onClick={() =>
                               run(
-                                () => addTenantAddon(tenantId, { type: addon.plan_limit, quantity: delta }),
+                                () => addTenantAddon(tenantId, { type: key, quantity: delta }),
                                 'Addon added.',
                               )
                             }
@@ -268,10 +280,10 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
                           <Button
                             variant="outline"
                             size="sm"
-                            disabled={busy}
+                            disabled={busy || (isFeature && !isActive)}
                             onClick={() =>
                               run(
-                                () => removeTenantAddon(tenantId, { type: addon.plan_limit, quantity: delta }),
+                                () => removeTenantAddon(tenantId, { type: key, quantity: delta }),
                                 'Addon removed.',
                               )
                             }
