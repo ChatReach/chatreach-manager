@@ -106,14 +106,63 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
         plan: selectedPlan,
         interval: selectedInterval,
       });
+      if (!url) {
+        toast.success('Plan activated.');
+        load();
+        onChanged();
+        return;
+      }
+
       setCheckoutUrl(url);
       toast.success('Checkout link generated.');
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Failed to generate checkout link.');
+      toast.error(err instanceof Error ? err.message : 'Failed to start subscription.');
     } finally {
       setBusy(false);
     }
   };
+
+  // Moving off a free plan needs payment details, so the API hands back a Checkout link instead of swapping.
+  const swapPlan = async () => {
+    setBusy(true);
+    try {
+      const result = await swapTenantSubscription(tenantId, { plan: selectedPlan, interval: selectedInterval });
+
+      if (result?.url) {
+        setCheckoutUrl(result.url);
+        toast.success('Checkout link generated.');
+        return;
+      }
+
+      toast.success('Plan swapped.');
+      load();
+      onChanged();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to swap plan.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const checkoutLink = checkoutUrl && (
+    <div className="flex flex-col gap-2 rounded-md border p-3">
+      <p className="text-muted-foreground text-sm">
+        Share this link with the workspace to complete payment. The subscription activates once they check out.
+      </p>
+      <p className="text-xs break-all">{checkoutUrl}</p>
+      <Button
+        variant="outline"
+        size="sm"
+        className="w-fit"
+        onClick={() => {
+          navigator.clipboard.writeText(checkoutUrl);
+          toast.success('Link copied.');
+        }}
+      >
+        Copy Link
+      </Button>
+    </div>
+  );
 
   const planIntervalFields = (
     <div className="flex flex-col gap-2 sm:flex-row">
@@ -169,32 +218,13 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
             <p className="text-muted-foreground text-sm">
               This workspace has no active Stripe subscription
               {state?.on_trial ? ' and is currently on trial' : ''}. Pick a plan to generate a Stripe Checkout
-              link the workspace can use to subscribe.
+              link the workspace can use to subscribe. Free plans are activated right away, without Checkout.
             </p>
             {planIntervalFields}
             <Button className="w-fit" disabled={busy || !selectedPlan} onClick={startSubscription}>
-              Generate Checkout Link
+              Start Subscription
             </Button>
-            {checkoutUrl && (
-              <div className="flex flex-col gap-2 rounded-md border p-3">
-                <p className="text-muted-foreground text-sm">
-                  Share this link with the workspace to complete payment. The subscription activates once they
-                  check out.
-                </p>
-                <p className="text-xs break-all">{checkoutUrl}</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-fit"
-                  onClick={() => {
-                    navigator.clipboard.writeText(checkoutUrl);
-                    toast.success('Link copied.');
-                  }}
-                >
-                  Copy Link
-                </Button>
-              </div>
-            )}
+            {checkoutLink}
           </div>
         ) : (
           <div className="flex flex-col gap-5">
@@ -218,15 +248,11 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
               <Button
                 className="w-fit"
                 disabled={busy}
-                onClick={() =>
-                  run(
-                    () => swapTenantSubscription(tenantId, { plan: selectedPlan, interval: selectedInterval }),
-                    'Plan swapped.',
-                  )
-                }
+                onClick={swapPlan}
               >
                 Swap Plan
               </Button>
+              {checkoutLink}
             </div>
 
             {activeAddons.length > 0 && (

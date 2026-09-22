@@ -130,7 +130,8 @@ export interface TenantSubscriptionState {
 }
 
 export interface StartSubscriptionResponse {
-  url: string;
+  /** Null when the plan is free: the subscription is active straight away, without Checkout. */
+  url: string | null;
 }
 
 export interface SwapPayload {

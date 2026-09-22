@@ -64,8 +64,9 @@ export const startTenantSubscription = (tenantId: string, data: SwapPayload) =>
     body: JSON.stringify(data),
   });
 
+/** Resolves to a Checkout link when the change needs payment details, such as upgrading from a free plan. */
 export const swapTenantSubscription = (tenantId: string, data: SwapPayload) =>
-  fetchClient<void>(API_ROUTES.ADMIN.TENANT_SUBSCRIPTION_SWAP(tenantId), {
+  fetchClient<{ url: string } | null>(API_ROUTES.ADMIN.TENANT_SUBSCRIPTION_SWAP(tenantId), {
     method: 'POST',
     body: JSON.stringify(data),
   });
