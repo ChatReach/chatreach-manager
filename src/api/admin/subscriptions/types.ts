@@ -17,6 +17,7 @@ export const PLAN_FEATURES = [
   'webhooks',
   'api_access',
   'touchpoint_widgets',
+  'zapier',
   'remove_touchpoint_widget_branding',
 ] as const;
 
