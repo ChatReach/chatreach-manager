@@ -1,4 +1,5 @@
 import { getPusherSocketId } from '@/lib/pusher';
+import { NETWORK_ERROR_MESSAGE, reportNetworkFailure, reportNetworkSuccess } from '@/lib/connectivity';
 import { getXsrfToken, getXTenant } from './cookies';
 
 export class ApiError extends Error {
@@ -8,6 +9,14 @@ export class ApiError extends Error {
     super(message);
     this.name = 'ApiError';
     this.status = status;
+  }
+}
+
+/** The request never got a response (offline, DNS, server down, CORS). */
+export class NetworkError extends Error {
+  constructor(message: string = NETWORK_ERROR_MESSAGE) {
+    super(message);
+    this.name = 'NetworkError';
   }
 }
 
@@ -47,13 +56,25 @@ export const fetchClient = async <T = unknown>(url: string, options: FetchOption
     requestHeaders['X-Socket-Id'] = socketId;
   }
 
-  const res = await fetch(fullUrl, {
-    method,
-    credentials: 'include',
-    headers: requestHeaders,
-    body,
-    ...rest,
-  });
+  let res: Response;
+  try {
+    res = await fetch(fullUrl, {
+      method,
+      credentials: 'include',
+      headers: requestHeaders,
+      body,
+      ...rest,
+    });
+  } catch (err) {
+    // fetch rejects with a TypeError ("Failed to fetch") when no response came back.
+    if (err instanceof TypeError) {
+      reportNetworkFailure();
+      throw new NetworkError();
+    }
+    throw err;
+  }
+
+  reportNetworkSuccess();
 
   if (!res.ok) {
     const errorBody = await safeJson(res);

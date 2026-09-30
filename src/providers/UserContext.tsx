@@ -1,6 +1,7 @@
 'use client';
 
 import { User } from '@/api/auth/types';
+import { NetworkError } from '@/api/fetchClient';
 import { getUser } from '@/api/auth/user';
 import { COOKIES } from '@/constants/storage';
 import { deleteCookie, setCookie } from 'cookies-next';
@@ -19,18 +20,28 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let retryTimer: number | undefined;
     const checkUser = async () => {
+      let retrying = false;
       try {
         const data = await getUser();
         setUser(data);
-      } catch {
+      } catch (err) {
+        // Unreachable API is not a logout: keep the session cookie and retry.
+        if (err instanceof NetworkError) {
+          retrying = true;
+          retryTimer = window.setTimeout(checkUser, 5000);
+          return;
+        }
         setUser(null);
       } finally {
-        setLoading(false);
+        // Stay in the loading state while retrying so route guards don't treat us as logged out.
+        if (!retrying) setLoading(false);
       }
     };
 
     checkUser();
+    return () => window.clearTimeout(retryTimer);
   }, []);
 
   const setUser = (newUser: User | null) => {

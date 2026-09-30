@@ -2,6 +2,7 @@ import { Geist_Mono, Inter } from 'next/font/google';
 
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
+import OfflineScreen from '@/components/OfflineScreen';
 import { UserProvider } from '@/providers/UserContext';
 import { Toaster } from '@/components/ui/sonner';
 import { cn } from '@/lib/utils';
@@ -26,6 +27,7 @@ export default function RootLayout({
     >
       <body>
         <ThemeProvider>
+          <OfflineScreen />
           <UserProvider>
             {children}
             <Toaster />
