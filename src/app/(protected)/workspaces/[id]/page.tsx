@@ -23,6 +23,7 @@ import {
 import { formatDate, formatDateTime } from '@/lib/utils';
 import { APP_ROUTES } from '@/constants/routes';
 import { BetaAccessCard } from './BetaAccessCard';
+import { BusinessAccountSpendingCard } from './BusinessAccountSpendingCard';
 import { EditWorkspaceDialog } from './EditWorkspaceDialog';
 import { ManageSubscriptionDialog } from './ManageSubscriptionDialog';
 
@@ -151,11 +152,6 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
             <DetailRow label="Trial ends at" value={
               tenant.trial_ends_at ? formatDate(tenant.trial_ends_at) : null
             } />
-            <DetailRow label="Monthly spending limit" value={
-              tenant.monthly_spending_limit != null
-                ? `$${tenant.monthly_spending_limit}`
-                : null
-            } />
             <DetailRow label="Exceeded spending limit" value={
               tenant.has_exceeded_spending_limit ? (
                 <Badge variant="destructive">Yes</Badge>
@@ -163,6 +159,12 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
             } />
           </CardContent>
         </Card>
+
+        <BusinessAccountSpendingCard
+          tenantId={tenant.id}
+          businessAccounts={tenant.business_accounts ?? []}
+          onChanged={loadTenant}
+        />
 
         <BetaAccessCard
           tenantId={tenant.id}

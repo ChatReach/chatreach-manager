@@ -24,6 +24,16 @@ export interface BillingAddress {
   country: string;
 }
 
+export interface TenantBusinessAccount {
+  id: string;
+  waba_id: string;
+  name: string | null;
+  currency: string | null;
+  monthly_spending_limit: number | null;
+  current_month_spending: number;
+  has_exceeded_spending_limit: boolean;
+}
+
 export interface Tenant {
   id: string;
   reference: string;
@@ -36,8 +46,8 @@ export interface Tenant {
   trial_ends_at: string | null;
   beta_access_status: BetaAccessStatus;
   beta_access_requested_at: string | null;
-  monthly_spending_limit: number | null;
   has_exceeded_spending_limit: boolean;
+  business_accounts?: TenantBusinessAccount[];
   users?: TenantMember[];
   users_count: number;
   campaigns_count: number;
@@ -74,7 +84,6 @@ export interface UpdateTenantPayload {
   billing_email?: string | null;
   billing_phone_number?: string | null;
   billing_address?: BillingAddress | null;
-  monthly_spending_limit?: number | null;
 }
 
 export interface UpdateBetaAccessPayload {

@@ -37,7 +37,6 @@ type Inputs = {
   billing_name: string;
   billing_email: string;
   billing_phone_number: string;
-  monthly_spending_limit: string;
   line1: string;
   line2: string;
   postal_code: string;
@@ -78,8 +77,6 @@ export function EditWorkspaceDialog({ open, onOpenChange, tenant, onChanged }: P
           billing_name: data.billing_name ?? '',
           billing_email: data.billing_email ?? '',
           billing_phone_number: data.billing_phone_number ?? '',
-          monthly_spending_limit:
-            tenant.monthly_spending_limit != null ? String(tenant.monthly_spending_limit) : '',
           line1: data.billing_address?.line1 ?? '',
           line2: data.billing_address?.line2 ?? '',
           postal_code: data.billing_address?.postal_code ?? '',
@@ -113,12 +110,6 @@ export function EditWorkspaceDialog({ open, onOpenChange, tenant, onChanged }: P
         billing_phone_number: data.billing_phone_number || null,
       }),
     };
-
-    const limit = data.monthly_spending_limit.trim();
-    const nextLimit = limit === '' ? null : Number(limit);
-    if (nextLimit !== (tenant.monthly_spending_limit ?? null)) {
-      payload.monthly_spending_limit = nextLimit;
-    }
 
     const address: BillingAddress = {
       line1: data.line1,
@@ -170,18 +161,6 @@ export function EditWorkspaceDialog({ open, onOpenChange, tenant, onChanged }: P
             <Label htmlFor="name">Name</Label>
             <Input id="name" {...register('name', { required: 'Name is required' })} />
             {errors.name && <p className="text-destructive text-sm">{errors.name.message}</p>}
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="monthly_spending_limit">Monthly spending limit</Label>
-            <Input
-              id="monthly_spending_limit"
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="No limit"
-              {...register('monthly_spending_limit')}
-            />
           </div>
 
           <Separator />
