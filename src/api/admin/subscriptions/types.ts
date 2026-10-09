@@ -18,6 +18,7 @@ export const PLAN_FEATURES = [
   'api_access',
   'touchpoint_widgets',
   'zapier',
+  'calendly',
   'remove_touchpoint_widget_branding',
 ] as const;
 
