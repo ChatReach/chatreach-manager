@@ -4,6 +4,7 @@ import type {
   CreateTenantPayload,
   Tenant,
   TenantBilling,
+  TenantBusinessAccount,
   TenantsResponse,
   UpdateBetaAccessPayload,
   UpdateTenantPayload,
@@ -32,3 +33,16 @@ export const updateTenantBetaAccess =(id: string, data: UpdateBetaAccessPayload)
     method: 'PATCH',
     body: JSON.stringify(data),
   });
+
+export const updateBusinessAccountSpendingLimit = (
+  tenantId: string,
+  businessAccountId: string,
+  monthlySpendingLimit: number | null,
+) =>
+  fetchClient<TenantBusinessAccount>(
+    API_ROUTES.ADMIN.TENANT_BUSINESS_ACCOUNT_SPENDING_LIMIT(tenantId, businessAccountId),
+    {
+      method: 'PUT',
+      body: JSON.stringify({ monthly_spending_limit: monthlySpendingLimit }),
+    },
+  );
