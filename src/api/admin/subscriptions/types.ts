@@ -11,11 +11,8 @@ export type PlanLimit = (typeof PLAN_LIMITS)[number];
 export const PLAN_FEATURES = [
   'multi_team_inbox',
   'campaign_analytics',
+  'conversation_analytics',
   'team_analytics',
-  'advanced_analytics',
-  'shopify',
-  'webhooks',
-  'api_access',
   'touchpoint_widgets',
   'zapier',
   'calendly',
