@@ -190,6 +190,7 @@ const ProfilePage = () => {
         </CardHeader>
         <CardContent>
           <form className="flex flex-col gap-4" onSubmit={handlePasswordSubmit(onPasswordSubmit)}>
+            <input type="email" name="username" autoComplete="username" value={user?.email ?? ''} readOnly hidden />
             <div className="flex flex-col gap-2">
               <Label htmlFor="currentPassword">Current password</Label>
               <Input

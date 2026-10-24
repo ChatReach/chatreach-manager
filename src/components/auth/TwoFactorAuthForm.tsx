@@ -63,7 +63,8 @@ const TwoFactorAuthForm = ({ onVerify, onVerifyRecoveryCode }: Props) => {
             type="text"
             inputMode={isRecoveryMode ? 'text' : 'numeric'}
             placeholder={isRecoveryMode ? 'Paste recovery code' : '6-digit code'}
-            autoComplete="one-time-code"
+            maxLength={isRecoveryMode ? undefined : 6}
+            autoComplete={isRecoveryMode ? 'off' : 'one-time-code'}
             {...register('code', {
               required: 'Field is required',
               validate: (value) => {

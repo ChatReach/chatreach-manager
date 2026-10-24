@@ -157,6 +157,7 @@ const EnableTwoFactorDialog = ({ trigger, onEnabled }: Props) => {
                 {qrImageSrc ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
+                    key={qrImageSrc}
                     src={qrImageSrc}
                     alt="2FA QR code"
                     className="block size-40 rounded-lg object-contain"
@@ -189,7 +190,9 @@ const EnableTwoFactorDialog = ({ trigger, onEnabled }: Props) => {
               <div className="mb-1 text-sm font-semibold">Enter code</div>
               <p className="text-muted-foreground mb-2 text-sm">6-digit code from your authenticator app</p>
               <Input
+                name="code"
                 placeholder="Enter code"
+                autoComplete="one-time-code"
                 inputMode="numeric"
                 maxLength={6}
                 value={code}
