@@ -8,6 +8,11 @@ export const PLAN_LIMITS = [
 
 export type PlanLimit = (typeof PLAN_LIMITS)[number];
 
+/** Limits that are counted again every month, starting on the day the workspace subscribed. */
+export const PLAN_MONTHLY_LIMITS = ['broadcasts'] as const;
+
+export type PlanMonthlyLimit = (typeof PLAN_MONTHLY_LIMITS)[number];
+
 export const PLAN_FEATURES = [
   'multi_team_inbox',
   'campaign_analytics',
@@ -21,8 +26,8 @@ export const PLAN_FEATURES = [
 
 export type PlanFeature = (typeof PLAN_FEATURES)[number];
 
-/** An addon sells either extra units of a limit or a single feature. */
-export type AddonType = PlanLimit | PlanFeature;
+/** An addon sells either extra units of a limit or a monthly limit, or a single feature. */
+export type AddonType = PlanLimit | PlanMonthlyLimit | PlanFeature;
 
 export type BillingInterval = 'monthly' | 'annual';
 
@@ -32,6 +37,7 @@ export interface SubscriptionAddon {
   subscription_plan_id: string | null;
   type: AddonType;
   plan_limit: PlanLimit | null;
+  plan_monthly_limit: PlanMonthlyLimit | null;
   plan_feature: PlanFeature | null;
   amount_per_unit: number;
   max_quantity: number;
@@ -59,6 +65,7 @@ export interface SubscriptionPlan {
   monthly_price: number | null;
   annual_price: number | null;
   limits: Partial<Record<PlanLimit, number>>;
+  monthly_limits: Partial<Record<PlanMonthlyLimit, number>>;
   features: Partial<Record<PlanFeature, boolean>>;
   stripe_monthly_price_id: string | null;
   stripe_annual_price_id: string | null;
@@ -85,11 +92,13 @@ export interface PlanPayload {
   stripe_annual_price_id?: string | null;
   shopify_plan_handle?: string | null;
   limits?: Partial<Record<PlanLimit, number>>;
+  monthly_limits?: Partial<Record<PlanMonthlyLimit, number>>;
   features?: Partial<Record<PlanFeature, boolean>>;
 }
 
 export interface AddonPayload {
   plan_limit?: PlanLimit | null;
+  plan_monthly_limit?: PlanMonthlyLimit | null;
   plan_feature?: PlanFeature | null;
   amount_per_unit: number;
   max_quantity: number;
@@ -103,6 +112,7 @@ export interface AddonPayload {
 export interface TenantSubscriptionAddon {
   type: AddonType;
   plan_limit: PlanLimit | null;
+  plan_monthly_limit: PlanMonthlyLimit | null;
   plan_feature: PlanFeature | null;
   quantity: number;
   price: number | null;

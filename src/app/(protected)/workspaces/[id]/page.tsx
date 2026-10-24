@@ -26,6 +26,7 @@ import { BetaAccessCard } from './BetaAccessCard';
 import { BusinessAccountSpendingCard } from './BusinessAccountSpendingCard';
 import { EditWorkspaceDialog } from './EditWorkspaceDialog';
 import { ManageSubscriptionDialog } from './ManageSubscriptionDialog';
+import { UsageCard } from './UsageCard';
 
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -55,6 +56,7 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
   const [error, setError] = useState<string | null>(null);
   const [manageOpen, setManageOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [usageVersion, setUsageVersion] = useState(0);
 
   const loadTenant = () => {
     getTenant(id)
@@ -159,6 +161,8 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
             } />
           </CardContent>
         </Card>
+
+        <UsageCard key={usageVersion} tenantId={tenant.id} />
 
         <BusinessAccountSpendingCard
           tenantId={tenant.id}
@@ -279,7 +283,10 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
         open={manageOpen}
         onOpenChange={setManageOpen}
         tenantId={tenant.id}
-        onChanged={loadTenant}
+        onChanged={() => {
+          loadTenant();
+          setUsageVersion((version) => version + 1);
+        }}
       />
 
       <EditWorkspaceDialog

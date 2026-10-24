@@ -1,3 +1,5 @@
+import type { PlanLimit, PlanMonthlyLimit } from '@/api/admin/subscriptions/types';
+
 export interface TenantOwner {
   id: string;
   firstname: string;
@@ -64,6 +66,21 @@ export interface TenantBilling {
   billing_email: string | null;
   billing_phone_number: string | null;
   billing_address: BillingAddress | null;
+}
+
+export interface TenantLimitUsage {
+  /** Null when the limit is unlimited. */
+  limit: number | null;
+  used: number;
+  remaining: number | null;
+}
+
+export interface TenantUsage {
+  /** Without a plan the workspace can't add anything that has a limit. */
+  has_plan: boolean;
+  limits: Record<PlanLimit, TenantLimitUsage>;
+  monthly_limits: Record<PlanMonthlyLimit, TenantLimitUsage>;
+  monthly_period: { starts_at: string; resets_at: string };
 }
 
 export interface CreateTenantPayload {

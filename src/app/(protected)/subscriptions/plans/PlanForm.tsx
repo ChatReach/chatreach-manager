@@ -9,8 +9,10 @@ import { createSubscriptionPlan, updateSubscriptionPlan } from '@/api/admin/subs
 import {
   PLAN_FEATURES,
   PLAN_LIMITS,
+  PLAN_MONTHLY_LIMITS,
   type PlanFeature,
   type PlanLimit,
+  type PlanMonthlyLimit,
   type PlanPayload,
   type SubscriptionPlan,
 } from '@/api/admin/subscriptions/types';
@@ -42,6 +44,7 @@ interface FormInputs {
   stripe_annual_price_id: string;
   shopify_plan_handle: string;
   limits: Record<PlanLimit, string>;
+  monthly_limits: Record<PlanMonthlyLimit, string>;
   features: Record<PlanFeature, boolean>;
 }
 
@@ -62,6 +65,9 @@ const buildDefaults = (plan?: SubscriptionPlan | null): FormInputs => ({
   limits: Object.fromEntries(
     PLAN_LIMITS.map((l) => [l, plan?.limits?.[l] != null ? String(plan.limits[l]) : '']),
   ) as Record<PlanLimit, string>,
+  monthly_limits: Object.fromEntries(
+    PLAN_MONTHLY_LIMITS.map((l) => [l, plan?.monthly_limits?.[l] != null ? String(plan.monthly_limits[l]) : '']),
+  ) as Record<PlanMonthlyLimit, string>,
   features: Object.fromEntries(
     PLAN_FEATURES.map((f) => [f, plan?.features?.[f] ?? false]),
   ) as Record<PlanFeature, boolean>,
@@ -92,6 +98,12 @@ export function PlanForm({ plan }: Props) {
       if (raw !== '' && raw != null) limits[key] = Number(raw);
     }
 
+    const monthlyLimits: Partial<Record<PlanMonthlyLimit, number>> = {};
+    for (const key of PLAN_MONTHLY_LIMITS) {
+      const raw = data.monthly_limits[key];
+      if (raw !== '' && raw != null) monthlyLimits[key] = Number(raw);
+    }
+
     const payload: PlanPayload = {
       name: data.name,
       slug: data.slug,
@@ -107,6 +119,7 @@ export function PlanForm({ plan }: Props) {
       stripe_annual_price_id: data.stripe_annual_price_id || null,
       shopify_plan_handle: data.shopify_plan_handle || null,
       limits,
+      monthly_limits: monthlyLimits,
       features: data.features,
     };
 
@@ -318,6 +331,33 @@ export function PlanForm({ plan }: Props) {
                     min={0}
                     placeholder="∞"
                     {...register(`limits.${limit}` as const)}
+                  />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Monthly Limits</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2">
+            <p className="text-muted-foreground text-xs">
+              Counted again every month, starting on the day the workspace subscribed. Leave blank for unlimited.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {PLAN_MONTHLY_LIMITS.map((limit) => (
+                <div key={limit} className="flex flex-col gap-1">
+                  <Label htmlFor={`monthly-limit-${limit}`} className="text-xs font-normal">
+                    {humanize(limit)}
+                  </Label>
+                  <Input
+                    id={`monthly-limit-${limit}`}
+                    type="number"
+                    min={0}
+                    placeholder="∞"
+                    {...register(`monthly_limits.${limit}` as const)}
                   />
                 </div>
               ))}

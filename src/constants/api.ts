@@ -20,6 +20,7 @@ export const API_ROUTES = {
     TENANTS: '/admin/tenants',
     TENANT: (id: string) => `/admin/tenants/${id}`,
     TENANT_BILLING: (id: string) => `/admin/tenants/${id}/billing`,
+    TENANT_USAGE: (id: string) => `/admin/tenants/${id}/usage`,
     TENANT_BETA_ACCESS: (id: string) => `/admin/tenants/${id}/beta-access`,
     TENANT_BUSINESS_ACCOUNT_SPENDING_LIMIT: (tenantId: string, businessAccountId: string) =>
       `/admin/tenants/${tenantId}/business-accounts/${businessAccountId}/spending-limit`,

@@ -6,6 +6,7 @@ import type {
   TenantBilling,
   TenantBusinessAccount,
   TenantsResponse,
+  TenantUsage,
   UpdateBetaAccessPayload,
   UpdateTenantPayload,
 } from './types';
@@ -18,6 +19,9 @@ export const getTenant = (id: string) =>
 
 export const getTenantBilling = (id: string) =>
   fetchClient<TenantBilling>(API_ROUTES.ADMIN.TENANT_BILLING(id));
+
+export const getTenantUsage = (id: string) =>
+  fetchClient<TenantUsage>(API_ROUTES.ADMIN.TENANT_USAGE(id));
 
 export const createTenant = (data: CreateTenantPayload) =>
   fetchClient<Tenant>(API_ROUTES.ADMIN.TENANTS, { method: 'POST', body: JSON.stringify(data) });

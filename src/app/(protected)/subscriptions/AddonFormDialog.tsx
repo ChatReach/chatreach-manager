@@ -7,9 +7,11 @@ import { createSharedAddon, createSubscriptionAddon, updateSubscriptionAddon } f
 import {
   PLAN_FEATURES,
   PLAN_LIMITS,
+  PLAN_MONTHLY_LIMITS,
   type AddonPayload,
   type PlanFeature,
   type PlanLimit,
+  type PlanMonthlyLimit,
   type SubscriptionAddon,
 } from '@/api/admin/subscriptions/types';
 import { Button } from '@/components/ui/button';
@@ -36,8 +38,9 @@ interface Props {
 }
 
 interface FormInputs {
-  kind: 'limit' | 'feature';
+  kind: 'limit' | 'monthly_limit' | 'feature';
   plan_limit: PlanLimit;
+  plan_monthly_limit: PlanMonthlyLimit;
   plan_feature: PlanFeature;
   amount_per_unit: number;
   max_quantity: number;
@@ -49,8 +52,9 @@ interface FormInputs {
 }
 
 const buildDefaults = (addon?: SubscriptionAddon | null): FormInputs => ({
-  kind: addon?.plan_feature ? 'feature' : 'limit',
+  kind: addon?.plan_feature ? 'feature' : addon?.plan_monthly_limit ? 'monthly_limit' : 'limit',
   plan_limit: addon?.plan_limit ?? PLAN_LIMITS[0],
+  plan_monthly_limit: addon?.plan_monthly_limit ?? PLAN_MONTHLY_LIMITS[0],
   plan_feature: addon?.plan_feature ?? PLAN_FEATURES[0],
   amount_per_unit: addon?.amount_per_unit ?? 1,
   max_quantity: addon?.max_quantity ?? 1,
@@ -76,6 +80,7 @@ export function AddonFormDialog({ open, onOpenChange, planId, addon, onSaved }: 
 
   const kind = watch('kind');
   const planLimit = watch('plan_limit');
+  const planMonthlyLimit = watch('plan_monthly_limit');
   const planFeature = watch('plan_feature');
   const isActive = watch('is_active');
   const isFeature = kind === 'feature';
@@ -88,7 +93,8 @@ export function AddonFormDialog({ open, onOpenChange, planId, addon, onSaved }: 
     const sellsFeature = data.kind === 'feature';
 
     const payload: AddonPayload = {
-      plan_limit: sellsFeature ? null : data.plan_limit,
+      plan_limit: data.kind === 'limit' ? data.plan_limit : null,
+      plan_monthly_limit: data.kind === 'monthly_limit' ? data.plan_monthly_limit : null,
       plan_feature: sellsFeature ? data.plan_feature : null,
       // A feature addon is bought once, so it has no per-unit amount to configure.
       amount_per_unit: sellsFeature ? 1 : Number(data.amount_per_unit),
@@ -124,8 +130,8 @@ export function AddonFormDialog({ open, onOpenChange, planId, addon, onSaved }: 
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit Addon' : 'Add Addon'}</DialogTitle>
           <DialogDescription>
-            Addons sell extra units of a plan limit, or a single feature. Paste the matching Stripe
-            price IDs.
+            Addons sell extra units of a plan limit or monthly limit, or a single feature. Paste the
+            matching Stripe price IDs.
           </DialogDescription>
         </DialogHeader>
 
@@ -139,6 +145,7 @@ export function AddonFormDialog({ open, onOpenChange, planId, addon, onSaved }: 
               className="border-input bg-background focus-visible:ring-ring h-9 rounded-md border px-3 text-sm focus-visible:ring-1 focus-visible:outline-none"
             >
               <option value="limit">Extra units of a limit</option>
+              <option value="monthly_limit">Extra units of a monthly limit</option>
               <option value="feature">A feature</option>
             </select>
           </div>
@@ -155,6 +162,22 @@ export function AddonFormDialog({ open, onOpenChange, planId, addon, onSaved }: 
                 {PLAN_FEATURES.map((feature) => (
                   <option key={feature} value={feature}>
                     {humanize(feature)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : kind === 'monthly_limit' ? (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="plan_monthly_limit">Monthly Limit</Label>
+              <select
+                id="plan_monthly_limit"
+                value={planMonthlyLimit}
+                onChange={(e) => setValue('plan_monthly_limit', e.target.value as PlanMonthlyLimit)}
+                className="border-input bg-background focus-visible:ring-ring h-9 rounded-md border px-3 text-sm focus-visible:ring-1 focus-visible:outline-none"
+              >
+                {PLAN_MONTHLY_LIMITS.map((limit) => (
+                  <option key={limit} value={limit}>
+                    {humanize(limit)}
                   </option>
                 ))}
               </select>

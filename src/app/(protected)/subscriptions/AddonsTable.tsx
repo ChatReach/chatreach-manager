@@ -80,6 +80,7 @@ export function AddonsTable({ addons, emptyLabel, onEdit, onDelete }: Props) {
                     <div className="flex items-center gap-2">
                       {humanize(addon.type)}
                       {isFeature && <Badge variant="outline">Feature</Badge>}
+                      {addon.plan_monthly_limit && <Badge variant="outline">Monthly</Badge>}
                     </div>
                   </TableCell>
                   <TableCell className="text-right">{isFeature ? '—' : addon.amount_per_unit}</TableCell>
