@@ -221,7 +221,7 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <StatCard label="Users" value={tenant.users_count} />
           <StatCard label="Campaigns" value={tenant.campaigns_count} />
-          <StatCard label="Workflows" value={tenant.workflows_count} />
+          <StatCard label="Workflows/Automations" value={tenant.workflows_count} />
           <StatCard label="Contacts" value={tenant.contacts_count} />
         </div>
       </div>
