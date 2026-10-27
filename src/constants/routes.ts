@@ -9,6 +9,7 @@ export const APP_ROUTES = {
   SUBSCRIPTIONS: '/subscriptions',
   SUBSCRIPTIONS_PLAN_NEW: '/subscriptions/plans/new',
   SUBSCRIPTIONS_PLAN_EDIT: (id: string) => `/subscriptions/plans/${id}/edit`,
+  FEED_WATCHERS: '/feed-watchers',
   WEBHOOK_CALLS: '/webhook-calls',
   PROFILE: '/profile',
 };

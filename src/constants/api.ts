@@ -35,6 +35,9 @@ export const API_ROUTES = {
     ADDONS: '/admin/addons',
     SUBSCRIPTION_ADDON: (id: string) => `/admin/addons/${id}`,
 
+    FEED_WATCHERS: '/admin/feed-watchers',
+    FEED_WATCHER: (id: string) => `/admin/feed-watchers/${id}`,
+
     TENANT_SUBSCRIPTION: (tenantId: string) => `/admin/tenants/${tenantId}/subscription`,
     TENANT_SUBSCRIPTION_SWAP: (tenantId: string) => `/admin/tenants/${tenantId}/subscription/swap`,
     TENANT_SUBSCRIPTION_CANCEL: (tenantId: string) => `/admin/tenants/${tenantId}/subscription/cancel`,
