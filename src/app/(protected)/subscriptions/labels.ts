@@ -1,5 +1,5 @@
 const LABEL_OVERRIDES: Record<string, string> = {
-  workflows: 'Workflows/Automations',
+  workflows: 'Active workflows/automations',
   flows: 'Flows/Forms',
   broadcasts: 'Campaign Broadcasts',
 };

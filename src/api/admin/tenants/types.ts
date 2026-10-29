@@ -53,7 +53,7 @@ export interface Tenant {
   users?: TenantMember[];
   users_count: number;
   campaigns_count: number;
-  workflows_count: number;
+  active_workflows_count: number;
   contacts_count: number;
   created_at: string;
   updated_at: string;
