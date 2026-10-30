@@ -22,6 +22,7 @@ export const PLAN_FEATURES = [
   'zapier',
   'calendly',
   'remove_touchpoint_widget_branding',
+  'ai_assistant',
 ] as const;
 
 export type PlanFeature = (typeof PLAN_FEATURES)[number];
