@@ -59,7 +59,7 @@ function SpendingLimitRow({
     <TableRow>
       <TableCell>
         <div className="font-medium">{businessAccount.name ?? '—'}</div>
-        <div className="text-muted-foreground text-xs">{businessAccount.waba_id}</div>
+        <div className="text-muted-foreground text-xs">{businessAccount.messaging_account_id}</div>
       </TableCell>
       <TableCell>
         {formatMoney(businessAccount.current_month_spending, businessAccount.currency)}
@@ -80,7 +80,7 @@ function SpendingLimitRow({
             className="h-8 w-32"
             value={limit}
             onChange={(event) => setLimit(event.target.value)}
-            aria-label={`Monthly spending limit of ${businessAccount.name ?? businessAccount.waba_id}`}
+            aria-label={`Monthly spending limit of ${businessAccount.name ?? businessAccount.messaging_account_id}`}
           />
           <Button size="sm" variant="outline" disabled={busy || !isChanged} onClick={save}>
             Save

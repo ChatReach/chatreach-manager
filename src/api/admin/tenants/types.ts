@@ -28,7 +28,7 @@ export interface BillingAddress {
 
 export interface TenantBusinessAccount {
   id: string;
-  waba_id: string;
+  messaging_account_id: string;
   name: string | null;
   currency: string | null;
   monthly_spending_limit: number | null;
