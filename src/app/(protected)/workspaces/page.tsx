@@ -7,9 +7,10 @@ import { getTenants } from '@/api/admin/tenants';
 import type { Tenant } from '@/api/admin/tenants/types';
 import Pagination from '@/components/common/Pagination';
 import SearchInput from '@/components/common/SearchInput';
+import SortableHead, { sortParam, type Sort } from '@/components/common/SortableHead';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { BETA_ACCESS_STATUS_BADGE } from '@/lib/betaAccess';
-import { formatDate } from '@/lib/utils';
+import { formatDateTime } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -33,15 +34,16 @@ export default function WorkspacesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [sort, setSort] = useState<Sort | null>(null);
   const debouncedSearch = useDebouncedValue(search);
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch]);
+  }, [debouncedSearch, sort]);
 
   useEffect(() => {
     setLoading(true);
-    getTenants({ 'page[number]': page, 'page[size]': pageSize, search: debouncedSearch })
+    getTenants({ 'page[number]': page, 'page[size]': pageSize, search: debouncedSearch, sort: sortParam(sort) })
       .then((res) => {
         setTenants(res.data);
         setTotal(res.meta.total);
@@ -49,7 +51,7 @@ export default function WorkspacesPage() {
       })
       .catch((err) => setError(err.message ?? 'Failed to load workspaces.'))
       .finally(() => setLoading(false));
-  }, [page, pageSize, debouncedSearch]);
+  }, [page, pageSize, debouncedSearch, sort]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -80,14 +82,14 @@ export default function WorkspacesPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Reference</TableHead>
+              <SortableHead column="name" sort={sort} onSortChange={setSort}>Name</SortableHead>
+              <SortableHead column="reference" sort={sort} onSortChange={setSort}>Reference</SortableHead>
               <TableHead>Owner</TableHead>
               <TableHead>Plan</TableHead>
               <TableHead>Trial</TableHead>
               <TableHead>Beta Access</TableHead>
-              <TableHead className="text-right">Users</TableHead>
-              <TableHead>Created</TableHead>
+              <SortableHead column="users_count" sort={sort} onSortChange={setSort} className="text-right">Users</SortableHead>
+              <SortableHead column="created_at" sort={sort} onSortChange={setSort}>Created</SortableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -145,7 +147,7 @@ export default function WorkspacesPage() {
                   </TableCell>
                   <TableCell className="text-right">{tenant.users_count}</TableCell>
                   <TableCell className="text-muted-foreground text-sm">
-                    {formatDate(tenant.created_at)}
+                    {formatDateTime(tenant.created_at)}
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <Button asChild variant="outline" size="sm">

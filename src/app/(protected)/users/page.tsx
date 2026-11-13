@@ -7,8 +7,9 @@ import { getUsers } from '@/api/admin/users';
 import type { AdminUser } from '@/api/admin/users/types';
 import Pagination from '@/components/common/Pagination';
 import SearchInput from '@/components/common/SearchInput';
+import SortableHead, { sortParam, type Sort } from '@/components/common/SortableHead';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
-import { formatDate } from '@/lib/utils';
+import { formatDateTime } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -32,15 +33,16 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [sort, setSort] = useState<Sort | null>(null);
   const debouncedSearch = useDebouncedValue(search);
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch]);
+  }, [debouncedSearch, sort]);
 
   useEffect(() => {
     setLoading(true);
-    getUsers({ 'page[number]': page, 'page[size]': pageSize, search: debouncedSearch })
+    getUsers({ 'page[number]': page, 'page[size]': pageSize, search: debouncedSearch, sort: sortParam(sort) })
       .then((res) => {
         setUsers(res.data);
         setTotal(res.meta.total);
@@ -48,7 +50,7 @@ export default function UsersPage() {
       })
       .catch((err) => setError(err.message ?? 'Failed to load users.'))
       .finally(() => setLoading(false));
-  }, [page, pageSize, debouncedSearch]);
+  }, [page, pageSize, debouncedSearch, sort]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -72,12 +74,12 @@ export default function UsersPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead className="text-right">Workspaces</TableHead>
+              <SortableHead column="firstname" sort={sort} onSortChange={setSort}>Name</SortableHead>
+              <SortableHead column="email" sort={sort} onSortChange={setSort}>Email</SortableHead>
+              <SortableHead column="tenants_count" sort={sort} onSortChange={setSort} className="text-right">Workspaces</SortableHead>
               <TableHead>Support access</TableHead>
-              <TableHead>Joined</TableHead>
-              <TableHead>Last active</TableHead>
+              <SortableHead column="created_at" sort={sort} onSortChange={setSort}>Joined</SortableHead>
+              <SortableHead column="last_activity_at" sort={sort} onSortChange={setSort}>Last active</SortableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -121,10 +123,10 @@ export default function UsersPage() {
                     )}
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">
-                    {formatDate(user.created_at)}
+                    {formatDateTime(user.created_at)}
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">
-                    {user.last_activity_at ? formatDate(user.last_activity_at) : '—'}
+                    {user.last_activity_at ? formatDateTime(user.last_activity_at) : '—'}
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <Button asChild variant="outline" size="sm">
