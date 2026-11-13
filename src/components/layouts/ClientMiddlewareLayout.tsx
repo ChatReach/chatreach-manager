@@ -1,10 +1,11 @@
 'use client';
 
 import { ReactNode, useEffect, useRef, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/providers/UserContext';
 import { getSession, logout } from '@/api/auth';
 import { APP_ROUTES, AUTH_ROUTES } from '@/constants/routes';
+import { isSafeReturnTo, returnToParams } from '@/lib/returnTo';
 
 interface Props {
   children: ReactNode;
@@ -13,11 +14,14 @@ interface Props {
 const ClientMiddlewareLayout = ({ children }: Props) => {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { user, setUser, loading } = useUser();
   const [isReady, setIsReady] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const isDiscardingSession = useRef(false);
 
+  const search = searchParams.toString();
+  const currentUrl = pathname + (search ? `?${search}` : '');
   const isAuthRoute = AUTH_ROUTES.includes(pathname);
 
   /*
@@ -61,22 +65,25 @@ const ClientMiddlewareLayout = ({ children }: Props) => {
     }
 
     if (requiresTwoFactorVerification && !isTwoFactorVerifyRoute) {
-      router.replace(APP_ROUTES.SIGN_IN_VERIFY);
+      const query = new URLSearchParams(returnToParams(currentUrl)).toString();
+      router.replace(query ? `${APP_ROUTES.SIGN_IN_VERIFY}?${query}` : APP_ROUTES.SIGN_IN_VERIFY);
       return;
     }
 
     if (!requiresTwoFactorVerification && admin && isAuthRoute) {
-      router.replace(APP_ROUTES.HOME);
+      const returnTo = new URLSearchParams(search).get('returnTo');
+      router.replace(isSafeReturnTo(returnTo) ? returnTo : APP_ROUTES.HOME);
       return;
     }
 
     if (!admin && !isAuthRoute) {
-      router.replace(APP_ROUTES.SIGN_IN);
+      const query = new URLSearchParams(returnToParams(currentUrl)).toString();
+      router.replace(query ? `${APP_ROUTES.SIGN_IN}?${query}` : APP_ROUTES.SIGN_IN);
       return;
     }
 
     setIsReady(true);
-  }, [isClient, loading, user, admin, setUser, isAuthRoute, pathname, router]);
+  }, [isClient, loading, user, admin, setUser, isAuthRoute, pathname, currentUrl, search, router]);
 
   if (!isClient || loading || !isReady) return null;
 

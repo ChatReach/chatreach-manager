@@ -1,7 +1,7 @@
 'use client';
 
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ import { getUser } from '@/api/auth/user';
 import { ApiError } from '@/api/fetchClient';
 import { useUser } from '@/providers/UserContext';
 import { APP_ROUTES } from '@/constants/routes';
+import { isSafeReturnTo } from '@/lib/returnTo';
 
 type Inputs = {
   email: string;
@@ -23,6 +24,7 @@ type Inputs = {
 
 const LoginForm = () => {
   const router = useRouter();
+  const returnTo = useSearchParams().get('returnTo');
   const { setUser } = useUser();
 
   const {
@@ -38,7 +40,7 @@ const LoginForm = () => {
       await login(data);
       const user = await getUser();
       setUser(user);
-      router.push(APP_ROUTES.HOME);
+      router.push(isSafeReturnTo(returnTo) ? returnTo : APP_ROUTES.HOME);
     } catch (error) {
       toast.error(error instanceof ApiError ? error.message : 'Login failed. Please try again.');
     }

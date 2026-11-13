@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { getSession, logout, verifyTwoFactor } from '@/api/auth';
@@ -8,17 +8,20 @@ import { getUser } from '@/api/auth/user';
 import TwoFactorAuthForm from '@/components/auth/TwoFactorAuthForm';
 import { Button } from '@/components/ui/button';
 import { APP_ROUTES } from '@/constants/routes';
+import { isSafeReturnTo } from '@/lib/returnTo';
 import { useUser } from '@/providers/UserContext';
 
 const TwoFactorVerifyPage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { setUser } = useUser();
 
   const completeLogin = async () => {
     const user = await getUser();
     if (user) {
       setUser(user);
-      router.push(APP_ROUTES.HOME);
+      const returnTo = searchParams.get('returnTo');
+      router.push(isSafeReturnTo(returnTo) ? returnTo : APP_ROUTES.HOME);
     }
   };
 
