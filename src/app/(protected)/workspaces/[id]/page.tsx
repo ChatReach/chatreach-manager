@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -26,6 +27,8 @@ import { BetaAccessCard } from './BetaAccessCard';
 import { BusinessAccountSpendingCard } from './BusinessAccountSpendingCard';
 import { EditWorkspaceDialog } from './EditWorkspaceDialog';
 import { ManageSubscriptionDialog } from './ManageSubscriptionDialog';
+import { OnboardingAnswersCard } from './OnboardingAnswersCard';
+import { StatisticsSection } from './StatisticsSection';
 import { UsageCard } from './UsageCard';
 
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
@@ -35,15 +38,6 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
         {label}
       </span>
       <span className="text-sm">{value ?? <span className="text-muted-foreground">—</span>}</span>
-    </div>
-  );
-}
-
-function StatCard({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-lg border p-4 text-center">
-      <p className="text-2xl font-semibold">{value}</p>
-      <p className="text-muted-foreground text-xs mt-1">{label}</p>
     </div>
   );
 }
@@ -113,119 +107,134 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
         </Button>
       </div>
 
-      {/* Organization/tenant details */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Organization</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-3 sm:grid-cols-2">
-            <DetailRow label="Name" value={tenant.name} />
-            <DetailRow label="Reference" value={
-              <span className="font-mono">{tenant.reference}</span>
-            } />
-            <DetailRow label="Personal workspace" value={tenant.is_personal ? 'Yes' : 'No'} />
-            <DetailRow label="Stripe ID" value={tenant.stripe_id} />
-            <DetailRow label="Created" value={formatDateTime(tenant.created_at)} />
-            <DetailRow label="Updated" value={formatDateTime(tenant.updated_at)} />
-            <DetailRow label="Deleted" value={
-              tenant.deleted_at ? formatDateTime(tenant.deleted_at) : null
-            } />
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="overview">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="subscription">Subscription</TabsTrigger>
+          <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
+          <TabsTrigger value="members">Members</TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base">Subscription</CardTitle>
-            <Button variant="outline" size="sm" onClick={() => setManageOpen(true)}>
-              Manage
-            </Button>
-          </CardHeader>
-          <CardContent className="grid gap-3 sm:grid-cols-2">
-            <DetailRow label="Plan" value={
-              tenant.subscription_plan ? (
-                <Badge variant="secondary" className="capitalize">
-                  {tenant.subscription_plan}
-                </Badge>
-              ) : null
-            } />
-            <DetailRow label="" value=""/>
-            <DetailRow label="On trial" value={tenant.is_on_trial ? 'Yes' : 'No'} />
-            <DetailRow label="Trial ends at" value={
-              tenant.trial_ends_at ? formatDate(tenant.trial_ends_at) : null
-            } />
-            <DetailRow label="Exceeded spending limit" value={
-              tenant.has_exceeded_spending_limit ? (
-                <Badge variant="destructive">Yes</Badge>
-              ) : 'No'
-            } />
-          </CardContent>
-        </Card>
+        <TabsContent value="overview" className="flex flex-col gap-6">
+        <StatisticsSection tenant={tenant} />
 
-        <UsageCard key={usageVersion} tenantId={tenant.id} />
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Organization</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-3 sm:grid-cols-2">
+              <DetailRow label="Name" value={tenant.name} />
+              <DetailRow label="Reference" value={
+                <span className="font-mono">{tenant.reference}</span>
+              } />
+              <DetailRow label="Personal workspace" value={tenant.is_personal ? 'Yes' : 'No'} />
+              <DetailRow label="Stripe ID" value={tenant.stripe_id} />
+              <DetailRow label="Created" value={formatDateTime(tenant.created_at)} />
+              <DetailRow label="Updated" value={formatDateTime(tenant.updated_at)} />
+              <DetailRow label="Deleted" value={
+                tenant.deleted_at ? formatDateTime(tenant.deleted_at) : null
+              } />
+            </CardContent>
+          </Card>
 
-        <BusinessAccountSpendingCard
-          tenantId={tenant.id}
-          businessAccounts={tenant.business_accounts ?? []}
-          onChanged={loadTenant}
-        />
+          <OnboardingAnswersCard answers={tenant.onboarding_answers} />
 
-        <BetaAccessCard
-          tenantId={tenant.id}
-          status={tenant.beta_access_status}
-          requestedAt={tenant.beta_access_requested_at}
-          onChanged={loadTenant}
-        />
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Billing</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RevealGate
-              label="View billing details"
-              description="Billing details are hidden. Viewing them is logged."
-              load={() => getTenantBilling(id)}
-            >
-              {(billing) => (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <DetailRow label="Billing name" value={billing.billing_name} />
-                  <DetailRow label="Billing email" value={billing.billing_email} />
-                  <DetailRow label="Billing phone" value={billing.billing_phone_number} />
-                  <DetailRow
-                    label="Billing address"
-                    value={
-                      billing.billing_address
-                        ? [
-                            billing.billing_address.line1,
-                            billing.billing_address.line2,
-                            `${billing.billing_address.postal_code} ${billing.billing_address.city}`,
-                            billing.billing_address.state,
-                            billing.billing_address.country,
-                          ]
-                            .filter(Boolean)
-                            .join(', ')
-                        : null
-                    }
-                  />
-                </div>
-              )}
-            </RevealGate>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Statistics */}
-      <div>
-        <h2 className="text-base font-semibold mb-3">Statistics</h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard label="Users" value={tenant.users_count} />
-          <StatCard label="Campaigns" value={tenant.campaigns_count} />
-          <StatCard label="Active workflows/automations" value={tenant.active_workflows_count} />
-          <StatCard label="Contacts" value={tenant.contacts_count} />
         </div>
-      </div>
 
+        <div className="grid gap-4 md:grid-cols-2">
+          <BetaAccessCard
+            tenantId={tenant.id}
+            status={tenant.beta_access_status}
+            requestedAt={tenant.beta_access_requested_at}
+            onChanged={loadTenant}
+          />
+        </div>
+        </TabsContent>
+
+        <TabsContent value="subscription">
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-base">Subscription</CardTitle>
+              <Button variant="outline" size="sm" onClick={() => setManageOpen(true)}>
+                Manage
+              </Button>
+            </CardHeader>
+            <CardContent className="grid gap-3 sm:grid-cols-2">
+              <DetailRow label="Plan" value={
+                tenant.subscription_plan ? (
+                  <Badge variant="secondary" className="capitalize">
+                    {tenant.subscription_plan}
+                  </Badge>
+                ) : null
+              } />
+              <DetailRow label="" value=""/>
+              <DetailRow label="On trial" value={tenant.is_on_trial ? 'Yes' : 'No'} />
+              <DetailRow label="Trial ends at" value={
+                tenant.trial_ends_at ? formatDate(tenant.trial_ends_at) : null
+              } />
+              <DetailRow label="Exceeded spending limit" value={
+                tenant.has_exceeded_spending_limit ? (
+                  <Badge variant="destructive">Yes</Badge>
+                ) : 'No'
+              } />
+            </CardContent>
+          </Card>
+
+          <UsageCard key={usageVersion} tenantId={tenant.id} />
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Billing</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RevealGate
+                label="View billing details"
+                description="Billing details are hidden. Viewing them is logged."
+                load={() => getTenantBilling(id)}
+              >
+                {(billing) => (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <DetailRow label="Billing name" value={billing.billing_name} />
+                    <DetailRow label="Billing email" value={billing.billing_email} />
+                    <DetailRow label="Billing phone" value={billing.billing_phone_number} />
+                    <DetailRow
+                      label="Billing address"
+                      value={
+                        billing.billing_address
+                          ? [
+                              billing.billing_address.line1,
+                              billing.billing_address.line2,
+                              `${billing.billing_address.postal_code} ${billing.billing_address.city}`,
+                              billing.billing_address.state,
+                              billing.billing_address.country,
+                            ]
+                              .filter(Boolean)
+                              .join(', ')
+                          : null
+                      }
+                    />
+                  </div>
+                )}
+              </RevealGate>
+            </CardContent>
+          </Card>
+        </div>
+        </TabsContent>
+
+        <TabsContent value="whatsapp">
+        <div className="grid gap-4 md:grid-cols-2">
+          <BusinessAccountSpendingCard
+            tenantId={tenant.id}
+            businessAccounts={tenant.business_accounts ?? []}
+            onChanged={loadTenant}
+          />
+
+        </div>
+        </TabsContent>
+
+        <TabsContent value="members">
       {/* Members */}
       <div>
         <h2 className="text-base font-semibold mb-3">Members</h2>
@@ -278,6 +287,9 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
           </Table>
         </div>
       </div>
+
+        </TabsContent>
+      </Tabs>
 
       <ManageSubscriptionDialog
         open={manageOpen}

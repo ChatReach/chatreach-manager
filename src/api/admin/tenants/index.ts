@@ -3,6 +3,7 @@ import { API_ROUTES } from '@/constants/api';
 import type {
   CreateTenantPayload,
   Tenant,
+  TenantActivity,
   TenantBilling,
   TenantBusinessAccount,
   TenantsResponse,
@@ -22,6 +23,9 @@ export const getTenantBilling = (id: string) =>
 
 export const getTenantUsage = (id: string) =>
   fetchClient<TenantUsage>(API_ROUTES.ADMIN.TENANT_USAGE(id));
+
+export const getTenantActivity = (id: string) =>
+  fetchClient<TenantActivity>(API_ROUTES.ADMIN.TENANT_ACTIVITY(id));
 
 export const createTenant = (data: CreateTenantPayload) =>
   fetchClient<Tenant>(API_ROUTES.ADMIN.TENANTS, { method: 'POST', body: JSON.stringify(data) });

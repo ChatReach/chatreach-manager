@@ -36,6 +36,8 @@ export interface TenantBusinessAccount {
   has_exceeded_spending_limit: boolean;
 }
 
+export type OnboardingAnswers = Record<string, string | null>;
+
 export interface Tenant {
   id: string;
   reference: string;
@@ -46,6 +48,7 @@ export interface Tenant {
   subscription_plan: string | null;
   is_on_trial: boolean;
   trial_ends_at: string | null;
+  onboarding_answers: OnboardingAnswers | null;
   beta_access_status: BetaAccessStatus;
   beta_access_requested_at: string | null;
   has_exceeded_spending_limit: boolean;
@@ -55,6 +58,9 @@ export interface Tenant {
   campaigns_count: number;
   active_workflows_count: number;
   contacts_count: number;
+  business_phone_numbers_count: number;
+  connected_integrations_count: number;
+  pending_invitations_count: number;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -73,6 +79,11 @@ export interface TenantLimitUsage {
   limit: number | null;
   used: number;
   remaining: number | null;
+}
+
+export interface TenantActivity {
+  messages_sent_30d: number;
+  messages_received_30d: number;
 }
 
 export interface TenantUsage {
