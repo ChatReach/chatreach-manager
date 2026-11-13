@@ -11,6 +11,7 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -36,13 +37,29 @@ import { useUser } from '@/providers/UserContext';
 import { logout } from '@/api/auth';
 import { useRouter } from 'next/navigation';
 
-const navItems = [
-  { label: 'Dashboard', href: APP_ROUTES.HOME, icon: LayoutDashboard },
-  { label: 'Workspaces', href: APP_ROUTES.WORKSPACES, icon: Users },
-  { label: 'Users', href: APP_ROUTES.USERS, icon: UserCog },
-  { label: 'Subscription Plans', href: APP_ROUTES.SUBSCRIPTIONS, icon: CreditCard },
-  { label: 'Webhook Calls', href: APP_ROUTES.WEBHOOK_CALLS, icon: Webhook },
-  { label: 'Feed Watchers', href: APP_ROUTES.FEED_WATCHERS, icon: Rss },
+const navGroups = [
+  {
+    label: 'Overview',
+    items: [{ label: 'Dashboard', href: APP_ROUTES.HOME, icon: LayoutDashboard }],
+  },
+  {
+    label: 'Customers',
+    items: [
+      { label: 'Workspaces', href: APP_ROUTES.WORKSPACES, icon: Users },
+      { label: 'Users', href: APP_ROUTES.USERS, icon: UserCog },
+    ],
+  },
+  {
+    label: 'Billing',
+    items: [{ label: 'Subscription Plans', href: APP_ROUTES.SUBSCRIPTIONS, icon: CreditCard }],
+  },
+  {
+    label: 'Integrations',
+    items: [
+      { label: 'Webhook Calls', href: APP_ROUTES.WEBHOOK_CALLS, icon: Webhook },
+      { label: 'Feed Watchers', href: APP_ROUTES.FEED_WATCHERS, icon: Rss },
+    ],
+  },
 ];
 
 const AppSidebar = () => {
@@ -72,22 +89,29 @@ const AppSidebar = () => {
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map(({ label, href, icon: Icon }) => (
-                <SidebarMenuItem key={href}>
-                  <SidebarMenuButton asChild isActive={href === '/' ? pathname === href : pathname.startsWith(href)} tooltip={label}>
-                    <Link href={href}>
-                      <Icon />
-                      <span>{label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {navGroups.map(({ label: groupLabel, items }) => (
+          <SidebarGroup key={groupLabel}>
+            <SidebarGroupLabel>{groupLabel}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {items.map(({ label, href, icon: Icon }) => (
+                  <SidebarMenuItem key={href}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={href === '/' ? pathname === href : pathname.startsWith(href)}
+                      tooltip={label}
+                    >
+                      <Link href={href}>
+                        <Icon />
+                        <span>{label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
       <SidebarSeparator />
