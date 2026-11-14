@@ -9,7 +9,7 @@ import Pagination from '@/components/common/Pagination';
 import SearchInput from '@/components/common/SearchInput';
 import SortableHead, { sortParam, type Sort } from '@/components/common/SortableHead';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
-import { BETA_ACCESS_STATUS_BADGE } from '@/lib/betaAccess';
+import { BETA_ACCESS_ENABLED, BETA_ACCESS_STATUS_BADGE } from '@/lib/betaAccess';
 import { formatDateTime } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+
+const COLUMN_COUNT = BETA_ACCESS_ENABLED ? 9 : 8;
 
 export default function WorkspacesPage() {
   const router = useRouter();
@@ -87,7 +89,7 @@ export default function WorkspacesPage() {
               <TableHead>Owner</TableHead>
               <TableHead>Plan</TableHead>
               <TableHead>Trial</TableHead>
-              <TableHead>Beta Access</TableHead>
+              {BETA_ACCESS_ENABLED && <TableHead>Beta Access</TableHead>}
               <SortableHead column="users_count" sort={sort} onSortChange={setSort} className="text-right">Users</SortableHead>
               <SortableHead column="created_at" sort={sort} onSortChange={setSort}>Created</SortableHead>
               <TableHead />
@@ -97,7 +99,7 @@ export default function WorkspacesPage() {
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 9 }).map((_, j) => (
+                  {Array.from({ length: COLUMN_COUNT }).map((_, j) => (
                     <TableCell key={j}>
                       <Skeleton className="h-4 w-full" />
                     </TableCell>
@@ -106,7 +108,7 @@ export default function WorkspacesPage() {
               ))
             ) : tenants.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-muted-foreground text-center">
+                <TableCell colSpan={COLUMN_COUNT} className="text-muted-foreground text-center">
                   No workspaces found.
                 </TableCell>
               </TableRow>
@@ -140,11 +142,13 @@ export default function WorkspacesPage() {
                       <span className="text-muted-foreground text-sm">No</span>
                     )}
                   </TableCell>
-                  <TableCell>
-                    <Badge variant={BETA_ACCESS_STATUS_BADGE[tenant.beta_access_status].variant}>
-                      {BETA_ACCESS_STATUS_BADGE[tenant.beta_access_status].label}
-                    </Badge>
-                  </TableCell>
+                  {BETA_ACCESS_ENABLED && (
+                    <TableCell>
+                      <Badge variant={BETA_ACCESS_STATUS_BADGE[tenant.beta_access_status].variant}>
+                        {BETA_ACCESS_STATUS_BADGE[tenant.beta_access_status].label}
+                      </Badge>
+                    </TableCell>
+                  )}
                   <TableCell className="text-right">{tenant.users_count}</TableCell>
                   <TableCell className="text-muted-foreground text-sm">
                     {formatDateTime(tenant.created_at)}

@@ -24,6 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { VALIDATION_REGEX } from '@/constants/validation';
+import { BETA_ACCESS_ENABLED } from '@/lib/betaAccess';
 
 interface Props {
   open: boolean;
@@ -151,8 +152,8 @@ export function EditWorkspaceDialog({ open, onOpenChange, tenant, onChanged }: P
         <DialogHeader>
           <DialogTitle>Edit workspace</DialogTitle>
           <DialogDescription>
-            Update the workspace name and billing details. Subscription and beta access are managed
-            separately.
+            Update the workspace name and billing details. Subscription
+            {BETA_ACCESS_ENABLED ? ' and beta access are' : ' is'} managed separately.
           </DialogDescription>
         </DialogHeader>
 

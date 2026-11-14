@@ -42,6 +42,16 @@ export const updateTenantBetaAccess =(id: string, data: UpdateBetaAccessPayload)
     body: JSON.stringify(data),
   });
 
+/** Extends a running trial, or starts a new one when it has ended. */
+export const updateTenantTrial = (id: string, endsAt: string) =>
+  fetchClient<Tenant>(API_ROUTES.ADMIN.TENANT_TRIAL(id), {
+    method: 'PUT',
+    body: JSON.stringify({ ends_at: endsAt }),
+  });
+
+export const endTenantTrial = (id: string) =>
+  fetchClient<Tenant>(API_ROUTES.ADMIN.TENANT_TRIAL(id), { method: 'DELETE' });
+
 export const updateBusinessAccountSpendingLimit = (
   tenantId: string,
   businessAccountId: string,

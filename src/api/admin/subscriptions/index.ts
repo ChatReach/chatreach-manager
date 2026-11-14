@@ -64,6 +64,16 @@ export const startTenantSubscription = (tenantId: string, data: SwapPayload) =>
     body: JSON.stringify(data),
   });
 
+/**
+ * Moves a Shopify-billed workspace to Stripe and resolves to the Checkout link for the chosen plan,
+ * or null when the plan is free. The merchant still has to cancel their plan in Shopify.
+ */
+export const switchTenantToStripe = (tenantId: string, data: SwapPayload) =>
+  fetchClient<StartSubscriptionResponse>(API_ROUTES.ADMIN.TENANT_SUBSCRIPTION_SWITCH_TO_STRIPE(tenantId), {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+
 /** Resolves to a Checkout link when the change needs payment details, such as upgrading from a free plan. */
 export const swapTenantSubscription = (tenantId: string, data: SwapPayload) =>
   fetchClient<{ url: string } | null>(API_ROUTES.ADMIN.TENANT_SUBSCRIPTION_SWAP(tenantId), {

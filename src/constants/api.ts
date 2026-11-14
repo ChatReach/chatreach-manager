@@ -22,6 +22,7 @@ export const API_ROUTES = {
     TENANT_BILLING: (id: string) => `/admin/tenants/${id}/billing`,
     TENANT_USAGE: (id: string) => `/admin/tenants/${id}/usage`,
     TENANT_ACTIVITY: (id: string) => `/admin/tenants/${id}/activity`,
+    TENANT_TRIAL: (id: string) => `/admin/tenants/${id}/trial`,
     TENANT_BETA_ACCESS: (id: string) => `/admin/tenants/${id}/beta-access`,
     TENANT_BUSINESS_ACCOUNT_SPENDING_LIMIT: (tenantId: string, businessAccountId: string) =>
       `/admin/tenants/${tenantId}/business-accounts/${businessAccountId}/spending-limit`,
@@ -40,6 +41,8 @@ export const API_ROUTES = {
     FEED_WATCHER: (id: string) => `/admin/feed-watchers/${id}`,
 
     TENANT_SUBSCRIPTION: (tenantId: string) => `/admin/tenants/${tenantId}/subscription`,
+    TENANT_SUBSCRIPTION_SWITCH_TO_STRIPE: (tenantId: string) =>
+      `/admin/tenants/${tenantId}/subscription/switch-to-stripe`,
     TENANT_SUBSCRIPTION_SWAP: (tenantId: string) => `/admin/tenants/${tenantId}/subscription/swap`,
     TENANT_SUBSCRIPTION_CANCEL: (tenantId: string) => `/admin/tenants/${tenantId}/subscription/cancel`,
     TENANT_SUBSCRIPTION_RESUME: (tenantId: string) => `/admin/tenants/${tenantId}/subscription/resume`,

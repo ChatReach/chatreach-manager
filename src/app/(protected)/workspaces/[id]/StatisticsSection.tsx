@@ -32,7 +32,6 @@ export function StatisticsSection({ tenant }: { tenant: Tenant }) {
 
   return (
     <div>
-      <h2 className="mb-3 text-base font-semibold">Statistics</h2>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <StatCard label="Users" value={tenant.users_count} />
         <StatCard label="Pending invitations" value={tenant.pending_invitations_count} />

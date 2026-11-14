@@ -32,6 +32,8 @@ export type AddonType = PlanLimit | PlanMonthlyLimit | PlanFeature;
 
 export type BillingInterval = 'monthly' | 'annual';
 
+export type BillingProvider = 'stripe' | 'shopify';
+
 export interface SubscriptionAddon {
   id: string;
   /** Null when the addon is sold on top of any plan. */
@@ -120,15 +122,24 @@ export interface TenantSubscriptionAddon {
 }
 
 export interface TenantSubscription {
+  billing_provider: BillingProvider;
+  status: string;
+  /** Links to the merchant's own Shopify admin, so only they can open them. */
+  shopify_manage_billing_url: string | null;
+  shopify_view_bills_url: string | null;
   plan: { name: string; slug: string } | null;
   price: number | null;
   interval: BillingInterval | null;
   ends_at: string | null;
+  next_charge_at: string | null;
   subscribed_at: string | null;
   addons: TenantSubscriptionAddon[];
 }
 
 export interface TenantSubscriptionState {
+  /** How the workspace is billed now, which can differ from the provider of `subscription` right after a switch. */
+  billing_provider: BillingProvider;
+  shopify_shop: string | null;
   subscribed: boolean;
   on_trial: boolean;
   trial_ends_at: string | null;

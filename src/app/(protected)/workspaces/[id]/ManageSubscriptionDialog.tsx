@@ -12,6 +12,7 @@ import {
   resumeTenantSubscription,
   startTenantSubscription,
   swapTenantSubscription,
+  switchTenantToStripe,
 } from '@/api/admin/subscriptions';
 import type {
   AddonType,
@@ -33,6 +34,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BILLING_PROVIDER_LABEL } from '@/lib/billingProvider';
+import { formatDate } from '@/lib/utils';
 import { humanize } from '../../subscriptions/labels';
 
 interface Props {
@@ -122,6 +125,37 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
     }
   };
 
+  const switchToStripe = async () => {
+    if (
+      !window.confirm(
+        'Switch this workspace to Stripe billing? The merchant must also cancel their plan in their Shopify admin, or they will be billed twice. Shopify billing stays off for this store from now on.',
+      )
+    )
+      return;
+
+    setBusy(true);
+    try {
+      const { url } = await switchTenantToStripe(tenantId, {
+        plan: selectedPlan,
+        interval: selectedInterval,
+      });
+      load();
+      onChanged();
+
+      if (!url) {
+        toast.success('Switched to Stripe and plan activated.');
+        return;
+      }
+
+      setCheckoutUrl(url);
+      toast.success('Switched to Stripe. Checkout link generated.');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to switch to Stripe.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   // Moving off a free plan needs payment details, so the API hands back a Checkout link instead of swapping.
   const swapPlan = async () => {
     setBusy(true);
@@ -198,13 +232,131 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
     </div>
   );
 
+  const subscription = state?.subscription ?? null;
+  const isShopifyBilled = state?.billing_provider === 'shopify';
+  const isShopifySubscription = subscription?.billing_provider === 'shopify';
+  const shopifyManageUrl = subscription?.shopify_manage_billing_url ?? null;
+
+  const currentSummary = (
+    <div className="flex flex-wrap items-center gap-2 text-sm">
+      <span className="text-muted-foreground">Current:</span>
+      {subscription?.plan ? (
+        <Badge variant="secondary" className="capitalize">
+          {subscription.plan.name}
+        </Badge>
+      ) : (
+        <span>—</span>
+      )}
+      {subscription?.interval && <Badge variant="outline">{subscription.interval}</Badge>}
+      {subscription && <Badge variant="outline">{BILLING_PROVIDER_LABEL[subscription.billing_provider]}</Badge>}
+      {state?.canceled && <Badge variant="destructive">Canceled</Badge>}
+      {state?.on_grace_period && <Badge variant="outline">Grace period</Badge>}
+    </div>
+  );
+
+  const shopifyView = (
+    <div className="flex flex-col gap-5">
+      {subscription && isShopifySubscription && state?.subscribed ? (
+        <div className="flex flex-col gap-3">
+          {currentSummary}
+          <div className="grid gap-1 text-sm">
+            {state.shopify_shop && (
+              <p>
+                <span className="text-muted-foreground">Shopify store:</span> {state.shopify_shop}
+              </p>
+            )}
+            {subscription.price !== null && (
+              <p>
+                <span className="text-muted-foreground">Price:</span> {subscription.price} / {subscription.interval === 'annual' ? 'year' : 'month'}
+              </p>
+            )}
+            {subscription.next_charge_at && (
+              <p>
+                <span className="text-muted-foreground">Next charge:</span> {formatDate(subscription.next_charge_at)}
+              </p>
+            )}
+            {subscription.ends_at && (
+              <p>
+                <span className="text-muted-foreground">Access ends:</span> {formatDate(subscription.ends_at)}
+              </p>
+            )}
+          </div>
+        </div>
+      ) : (
+        <p className="text-muted-foreground text-sm">
+          This workspace has no active Shopify subscription
+          {state?.shopify_shop ? ` for ${state.shopify_shop}` : ''}
+          {state?.on_trial ? ' and is currently on trial' : ''}.
+        </p>
+      )}
+
+      {isShopifyBilled ? (
+        <>
+          <div className="flex flex-col gap-2 rounded-md border p-3">
+            <p className="text-muted-foreground text-sm">
+              This workspace is billed through Shopify. Its plan can only be changed or canceled by the merchant
+              from their Shopify admin. Send them this link to the plan page:
+            </p>
+            {shopifyManageUrl ? (
+              <>
+                <p className="text-xs break-all">{shopifyManageUrl}</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-fit"
+                  onClick={() => {
+                    navigator.clipboard.writeText(shopifyManageUrl);
+                    toast.success('Link copied.');
+                  }}
+                >
+                  Copy Link
+                </Button>
+              </>
+            ) : (
+              <p className="text-xs">No Shopify store is connected, so there is no plan page to link to.</p>
+            )}
+          </div>
+
+          <Separator />
+          <div className="flex flex-col gap-3">
+            <h3 className="text-sm font-medium">Switch to Stripe</h3>
+            <p className="text-muted-foreground text-sm">
+              Moves this workspace to Stripe billing and generates a Stripe Checkout link for the chosen plan. The
+              current Shopify subscription keeps access until its paid period ends.
+            </p>
+            {planIntervalFields}
+            <Button className="w-fit" disabled={busy || !selectedPlan} onClick={switchToStripe}>
+              Switch to Stripe
+            </Button>
+            {checkoutLink}
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="text-muted-foreground text-sm">
+            This workspace now bills through Stripe
+            {subscription?.ends_at ? `; its Shopify access ends on ${formatDate(subscription.ends_at)}` : ''}. Generate
+            a Stripe Checkout link for the plan it should continue on.
+          </p>
+          {planIntervalFields}
+          <Button className="w-fit" disabled={busy || !selectedPlan} onClick={startSubscription}>
+            Start Subscription
+          </Button>
+          {checkoutLink}
+        </>
+      )}
+    </div>
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Manage Subscription</DialogTitle>
           <DialogDescription>
-            Change the plan, interval, addons, or cancellation state for this workspace.
+            {isShopifyBilled || isShopifySubscription
+              ? 'This workspace is on a Shopify subscription, which only the merchant can change.'
+              : 'Change the plan, interval, addons, or cancellation state for this workspace.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -213,6 +365,8 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
             <Skeleton className="h-20" />
             <Skeleton className="h-24" />
           </div>
+        ) : isShopifyBilled || isShopifySubscription ? (
+          shopifyView
         ) : !state?.subscribed ? (
           <div className="flex flex-col gap-4">
             <p className="text-muted-foreground text-sm">
@@ -228,19 +382,7 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
           </div>
         ) : (
           <div className="flex flex-col gap-5">
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              <span className="text-muted-foreground">Current:</span>
-              {state.subscription?.plan ? (
-                <Badge variant="secondary" className="capitalize">
-                  {state.subscription.plan.name}
-                </Badge>
-              ) : (
-                <span>—</span>
-              )}
-              {state.subscription?.interval && <Badge variant="outline">{state.subscription.interval}</Badge>}
-              {state.canceled && <Badge variant="destructive">Canceled</Badge>}
-              {state.on_grace_period && <Badge variant="outline">Grace period</Badge>}
-            </div>
+            {currentSummary}
 
             <div className="flex flex-col gap-3">
               <h3 className="text-sm font-medium">Change Plan</h3>

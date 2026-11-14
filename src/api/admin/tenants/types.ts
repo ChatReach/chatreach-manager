@@ -1,4 +1,4 @@
-import type { PlanLimit, PlanMonthlyLimit } from '@/api/admin/subscriptions/types';
+import type { BillingProvider, PlanLimit, PlanMonthlyLimit } from '@/api/admin/subscriptions/types';
 
 export interface TenantOwner {
   id: string;
@@ -44,10 +44,12 @@ export interface Tenant {
   name: string;
   is_personal: boolean;
   owner: TenantOwner;
+  billing_provider: BillingProvider;
   stripe_id: string | null;
   subscription_plan: string | null;
   is_on_trial: boolean;
   trial_ends_at: string | null;
+  is_subscribed: boolean;
   onboarding_answers: OnboardingAnswers | null;
   beta_access_status: BetaAccessStatus;
   beta_access_requested_at: string | null;

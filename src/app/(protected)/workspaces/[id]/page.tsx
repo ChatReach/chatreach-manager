@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { use } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { getTenant, getTenantBilling } from '@/api/admin/tenants';
@@ -11,6 +11,7 @@ import { RevealGate } from '@/components/RevealGate';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -21,14 +22,18 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { formatDate, formatDateTime } from '@/lib/utils';
+import { BETA_ACCESS_ENABLED } from '@/lib/betaAccess';
+import { BILLING_PROVIDER_LABEL } from '@/lib/billingProvider';
+import { formatDateTime } from '@/lib/utils';
 import { APP_ROUTES } from '@/constants/routes';
 import { BetaAccessCard } from './BetaAccessCard';
 import { BusinessAccountSpendingCard } from './BusinessAccountSpendingCard';
 import { EditWorkspaceDialog } from './EditWorkspaceDialog';
 import { ManageSubscriptionDialog } from './ManageSubscriptionDialog';
+import { ManageTrialDialog } from './ManageTrialDialog';
 import { OnboardingAnswersCard } from './OnboardingAnswersCard';
 import { StatisticsSection } from './StatisticsSection';
+import { TrialSection } from './TrialSection';
 import { UsageCard } from './UsageCard';
 
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
@@ -42,13 +47,34 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
   );
 }
 
+const TABS = ['overview', 'subscription', 'whatsapp', 'members'] as const;
+
+type Tab = (typeof TABS)[number];
+
+const isTab = (value: string | null): value is Tab => TABS.includes(value as Tab);
+
 export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const activeTab: Tab = isTab(tabParam) ? tabParam : 'overview';
+
+  // Replaces rather than pushes, so switching tabs doesn't fill the back button history.
+  const setActiveTab = (tab: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (tab === 'overview') params.delete('tab');
+    else params.set('tab', tab);
+
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  };
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [manageOpen, setManageOpen] = useState(false);
+  const [manageTrialOpen, setManageTrialOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [usageVersion, setUsageVersion] = useState(0);
 
@@ -107,7 +133,7 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
         </Button>
       </div>
 
-      <Tabs defaultValue="overview">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="subscription">Subscription</TabsTrigger>
@@ -142,14 +168,16 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
 
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <BetaAccessCard
-            tenantId={tenant.id}
-            status={tenant.beta_access_status}
-            requestedAt={tenant.beta_access_requested_at}
-            onChanged={loadTenant}
-          />
-        </div>
+        {BETA_ACCESS_ENABLED && (
+          <div className="grid gap-4 md:grid-cols-2">
+            <BetaAccessCard
+              tenantId={tenant.id}
+              status={tenant.beta_access_status}
+              requestedAt={tenant.beta_access_requested_at}
+              onChanged={loadTenant}
+            />
+          </div>
+        )}
         </TabsContent>
 
         <TabsContent value="subscription">
@@ -158,10 +186,11 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-base">Subscription</CardTitle>
               <Button variant="outline" size="sm" onClick={() => setManageOpen(true)}>
-                Manage
+                Manage Subscription
               </Button>
             </CardHeader>
-            <CardContent className="grid gap-3 sm:grid-cols-2">
+            <CardContent className="flex flex-col gap-5">
+              <div className="grid gap-3 sm:grid-cols-2">
               <DetailRow label="Plan" value={
                 tenant.subscription_plan ? (
                   <Badge variant="secondary" className="capitalize">
@@ -169,16 +198,19 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
                   </Badge>
                 ) : null
               } />
-              <DetailRow label="" value=""/>
-              <DetailRow label="On trial" value={tenant.is_on_trial ? 'Yes' : 'No'} />
-              <DetailRow label="Trial ends at" value={
-                tenant.trial_ends_at ? formatDate(tenant.trial_ends_at) : null
+              <DetailRow label="Billed through" value={
+                <Badge variant={tenant.billing_provider === 'shopify' ? 'default' : 'outline'}>
+                  {BILLING_PROVIDER_LABEL[tenant.billing_provider]}
+                </Badge>
               } />
               <DetailRow label="Exceeded spending limit" value={
                 tenant.has_exceeded_spending_limit ? (
                   <Badge variant="destructive">Yes</Badge>
                 ) : 'No'
               } />
+              </div>
+              <Separator />
+              <TrialSection tenant={tenant} onManage={() => setManageTrialOpen(true)} />
             </CardContent>
           </Card>
 
@@ -290,6 +322,16 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
 
         </TabsContent>
       </Tabs>
+
+      <ManageTrialDialog
+        open={manageTrialOpen}
+        onOpenChange={setManageTrialOpen}
+        tenant={tenant}
+        onChanged={() => {
+          loadTenant();
+          setUsageVersion((version) => version + 1);
+        }}
+      />
 
       <ManageSubscriptionDialog
         open={manageOpen}

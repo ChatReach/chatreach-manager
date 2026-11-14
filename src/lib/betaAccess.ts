@@ -1,5 +1,7 @@
 import type { BetaAccessStatus } from '@/api/admin/tenants/types';
 
+export const BETA_ACCESS_ENABLED = process.env.NEXT_PUBLIC_BETA_ACCESS_ENABLED === 'true';
+
 export const BETA_ACCESS_STATUS_BADGE: Record<
   BetaAccessStatus,
   { label: string; variant: 'outline' | 'secondary' | 'default' | 'destructive' }
