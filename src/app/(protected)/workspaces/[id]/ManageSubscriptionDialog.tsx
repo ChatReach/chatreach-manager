@@ -128,7 +128,7 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
   const switchToStripe = async () => {
     if (
       !window.confirm(
-        'Switch this workspace to Stripe billing? The merchant must also cancel their plan in their Shopify admin, or they will be billed twice. Shopify billing stays off for this store from now on.',
+        'Switch this workspace to Stripe billing? Its Shopify subscription is canceled now and Shopify refunds the unused part. Shopify billing stays off for this store from now on.',
       )
     )
       return;
@@ -281,6 +281,25 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
               </p>
             )}
           </div>
+          {isShopifyBilled && (
+            <Button
+              variant="destructive"
+              size="sm"
+              className="w-fit"
+              disabled={busy}
+              onClick={() => {
+                if (
+                  !window.confirm(
+                    'Cancel this workspace’s Shopify subscription? Access ends now and Shopify refunds the unused part.',
+                  )
+                )
+                  return;
+                run(() => cancelTenantSubscription(tenantId), 'Shopify subscription canceled.');
+              }}
+            >
+              Cancel Subscription
+            </Button>
+          )}
         </div>
       ) : (
         <p className="text-muted-foreground text-sm">
@@ -294,8 +313,8 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
         <>
           <div className="flex flex-col gap-2 rounded-md border p-3">
             <p className="text-muted-foreground text-sm">
-              This workspace is billed through Shopify. Its plan can only be changed or canceled by the merchant
-              from their Shopify admin. Send them this link to the plan page:
+              This workspace is billed through Shopify. Its plan can only be changed by the merchant from their
+              Shopify admin. Send them this link to the plan page:
             </p>
             {shopifyManageUrl ? (
               <>
@@ -322,7 +341,7 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
             <h3 className="text-sm font-medium">Switch to Stripe</h3>
             <p className="text-muted-foreground text-sm">
               Moves this workspace to Stripe billing and generates a Stripe Checkout link for the chosen plan. The
-              current Shopify subscription keeps access until its paid period ends.
+              current Shopify subscription is canceled now, with a prorated refund from Shopify.
             </p>
             {planIntervalFields}
             <Button className="w-fit" disabled={busy || !selectedPlan} onClick={switchToStripe}>
@@ -355,7 +374,7 @@ export function ManageSubscriptionDialog({ open, onOpenChange, tenantId, onChang
           <DialogTitle>Manage Subscription</DialogTitle>
           <DialogDescription>
             {isShopifyBilled || isShopifySubscription
-              ? 'This workspace is on a Shopify subscription, which only the merchant can change.'
+              ? 'This workspace is on a Shopify subscription. Only the merchant can change its plan.'
               : 'Change the plan, interval, addons, or cancellation state for this workspace.'}
           </DialogDescription>
         </DialogHeader>
