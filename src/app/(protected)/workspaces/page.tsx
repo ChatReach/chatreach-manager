@@ -137,7 +137,9 @@ export default function WorkspacesPage() {
                   </TableCell>
                   <TableCell>
                     {tenant.is_on_trial ? (
-                      <Badge variant="outline">Trial</Badge>
+                      <Badge variant="outline">
+                        {tenant.trial_extended_at ? 'Extended trial' : 'Trial'}
+                      </Badge>
                     ) : (
                       <span className="text-muted-foreground text-sm">No</span>
                     )}

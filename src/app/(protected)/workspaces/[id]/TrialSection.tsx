@@ -28,6 +28,7 @@ export function TrialSection({ tenant, onManage }: Props) {
           ) : (
             <Badge variant="outline">No trial</Badge>
           )}
+          {tenant.trial_extended_at && <Badge variant="secondary">Extended</Badge>}
         </div>
         {!tenant.is_subscribed && (
           <Button variant="outline" size="sm" onClick={onManage}>
@@ -52,6 +53,14 @@ export function TrialSection({ tenant, onManage }: Props) {
               {describeDuration(remainingMs)} {isActive ? 'left' : 'ago'}
             </span>
           </div>
+          {tenant.trial_extended_at && (
+            <div className="flex flex-col gap-0.5">
+              <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+                Extended at
+              </span>
+              <span className="text-sm">{formatDateTime(tenant.trial_extended_at)}</span>
+            </div>
+          )}
         </div>
       )}
 

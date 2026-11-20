@@ -49,6 +49,8 @@ export interface Tenant {
   subscription_plan: string | null;
   is_on_trial: boolean;
   trial_ends_at: string | null;
+  /** Set when the workspace used the one-time extension from the trial-ended email. */
+  trial_extended_at: string | null;
   is_subscribed: boolean;
   onboarding_answers: OnboardingAnswers | null;
   beta_access_status: BetaAccessStatus;
