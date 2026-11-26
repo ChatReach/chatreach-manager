@@ -13,6 +13,7 @@ import { formatDateTime } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { APP_ROUTES } from '@/constants/routes';
 import {
   Table,
@@ -34,15 +35,22 @@ export default function UsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<Sort | null>(null);
+  const [showDeleted, setShowDeleted] = useState(false);
   const debouncedSearch = useDebouncedValue(search);
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, sort]);
+  }, [debouncedSearch, sort, showDeleted]);
 
   useEffect(() => {
     setLoading(true);
-    getUsers({ 'page[number]': page, 'page[size]': pageSize, search: debouncedSearch, sort: sortParam(sort) })
+    getUsers({
+      'page[number]': page,
+      'page[size]': pageSize,
+      search: debouncedSearch,
+      sort: sortParam(sort),
+      ...(showDeleted && { trashed: 'only' }),
+    })
       .then((res) => {
         setUsers(res.data);
         setTotal(res.meta.total);
@@ -50,7 +58,7 @@ export default function UsersPage() {
       })
       .catch((err) => setError(err.message ?? 'Failed to load users.'))
       .finally(() => setLoading(false));
-  }, [page, pageSize, debouncedSearch, sort]);
+  }, [page, pageSize, debouncedSearch, sort, showDeleted]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -63,12 +71,23 @@ export default function UsersPage() {
 
       {error && <p className="text-destructive text-sm">{error}</p>}
 
-      <SearchInput
-        value={search}
-        onChange={setSearch}
-        placeholder="Search users…"
-        className="max-w-sm"
-      />
+      <div className="flex flex-wrap items-center gap-3">
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Search users…"
+          className="max-w-sm"
+        />
+        <Tabs
+          value={showDeleted ? 'deleted' : 'active'}
+          onValueChange={(value) => setShowDeleted(value === 'deleted')}
+        >
+          <TabsList>
+            <TabsTrigger value="active">Active</TabsTrigger>
+            <TabsTrigger value="deleted">Deleted</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
 
       <div className="rounded-md border">
         <Table>
@@ -80,7 +99,11 @@ export default function UsersPage() {
               <TableHead>Support access</TableHead>
               <SortableHead column="created_at" sort={sort} onSortChange={setSort}>Joined</SortableHead>
               <SortableHead column="last_activity_at" sort={sort} onSortChange={setSort}>Last active</SortableHead>
-              <TableHead />
+              {showDeleted ? (
+                <SortableHead column="deleted_at" sort={sort} onSortChange={setSort}>Deleted</SortableHead>
+              ) : (
+                <TableHead />
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -104,8 +127,8 @@ export default function UsersPage() {
               users.map((user) => (
                 <TableRow
                   key={user.id}
-                  className="cursor-pointer"
-                  onClick={() => router.push(APP_ROUTES.USER(user.id))}
+                  className={user.deleted_at ? undefined : 'cursor-pointer'}
+                  onClick={user.deleted_at ? undefined : () => router.push(APP_ROUTES.USER(user.id))}
                 >
                   <TableCell className="font-medium">
                     <span className="flex items-center gap-2">
@@ -128,11 +151,17 @@ export default function UsersPage() {
                   <TableCell className="text-muted-foreground text-sm">
                     {user.last_activity_at ? formatDateTime(user.last_activity_at) : '—'}
                   </TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <Button asChild variant="outline" size="sm">
-                      <Link href={APP_ROUTES.USER(user.id)}>View</Link>
-                    </Button>
-                  </TableCell>
+                  {user.deleted_at ? (
+                    <TableCell className="text-muted-foreground text-sm">
+                      {formatDateTime(user.deleted_at)}
+                    </TableCell>
+                  ) : (
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={APP_ROUTES.USER(user.id)}>View</Link>
+                      </Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             )}

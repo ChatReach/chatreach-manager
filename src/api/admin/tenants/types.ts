@@ -68,6 +68,8 @@ export interface Tenant {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+  /** Soft-deleted by the inactivity cleanup rather than by its owner. */
+  deleted_for_inactivity: boolean;
 }
 
 /** Served only by the billing endpoint, which audit-logs every read. */

@@ -26,6 +26,7 @@ export interface AdminUser {
   two_factor_enabled?: boolean;
   updated_at?: string;
   last_activity_at?: string | null;
+  deleted_at: string | null;
 }
 
 export interface StartImpersonationResponse {

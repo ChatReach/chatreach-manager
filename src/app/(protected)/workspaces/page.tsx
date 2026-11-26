@@ -14,6 +14,7 @@ import { formatDateTime } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { APP_ROUTES } from '@/constants/routes';
 import {
   Table,
@@ -37,15 +38,22 @@ export default function WorkspacesPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<Sort | null>(null);
+  const [showDeleted, setShowDeleted] = useState(false);
   const debouncedSearch = useDebouncedValue(search);
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, sort]);
+  }, [debouncedSearch, sort, showDeleted]);
 
   useEffect(() => {
     setLoading(true);
-    getTenants({ 'page[number]': page, 'page[size]': pageSize, search: debouncedSearch, sort: sortParam(sort) })
+    getTenants({
+      'page[number]': page,
+      'page[size]': pageSize,
+      search: debouncedSearch,
+      sort: sortParam(sort),
+      ...(showDeleted && { trashed: 'only' }),
+    })
       .then((res) => {
         setTenants(res.data);
         setTotal(res.meta.total);
@@ -53,7 +61,7 @@ export default function WorkspacesPage() {
       })
       .catch((err) => setError(err.message ?? 'Failed to load workspaces.'))
       .finally(() => setLoading(false));
-  }, [page, pageSize, debouncedSearch, sort]);
+  }, [page, pageSize, debouncedSearch, sort, showDeleted]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -73,12 +81,23 @@ export default function WorkspacesPage() {
         <p className="text-destructive text-sm">{error}</p>
       )}
 
-      <SearchInput
-        value={search}
-        onChange={setSearch}
-        placeholder="Search workspaces…"
-        className="max-w-sm"
-      />
+      <div className="flex flex-wrap items-center gap-3">
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Search workspaces…"
+          className="max-w-sm"
+        />
+        <Tabs
+          value={showDeleted ? 'deleted' : 'active'}
+          onValueChange={(value) => setShowDeleted(value === 'deleted')}
+        >
+          <TabsList>
+            <TabsTrigger value="active">Active</TabsTrigger>
+            <TabsTrigger value="deleted">Deleted</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
 
       <div className="rounded-md border">
         <Table>
@@ -92,7 +111,11 @@ export default function WorkspacesPage() {
               {BETA_ACCESS_ENABLED && <TableHead>Beta Access</TableHead>}
               <SortableHead column="users_count" sort={sort} onSortChange={setSort} className="text-right">Users</SortableHead>
               <SortableHead column="created_at" sort={sort} onSortChange={setSort}>Created</SortableHead>
-              <TableHead />
+              {showDeleted ? (
+                <SortableHead column="deleted_at" sort={sort} onSortChange={setSort}>Deleted</SortableHead>
+              ) : (
+                <TableHead />
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -116,8 +139,8 @@ export default function WorkspacesPage() {
               tenants.map((tenant) => (
                 <TableRow
                   key={tenant.id}
-                  className="cursor-pointer"
-                  onClick={() => router.push(`/workspaces/${tenant.id}`)}
+                  className={tenant.deleted_at ? undefined : 'cursor-pointer'}
+                  onClick={tenant.deleted_at ? undefined : () => router.push(`/workspaces/${tenant.id}`)}
                 >
                   <TableCell className="font-medium">{tenant.name}</TableCell>
                   <TableCell className="text-muted-foreground font-mono text-xs">
@@ -155,11 +178,22 @@ export default function WorkspacesPage() {
                   <TableCell className="text-muted-foreground text-sm">
                     {formatDateTime(tenant.created_at)}
                   </TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <Button asChild variant="outline" size="sm">
-                      <Link href={`/workspaces/${tenant.id}`}>View</Link>
-                    </Button>
-                  </TableCell>
+                  {tenant.deleted_at ? (
+                    <TableCell>
+                      <span className="flex items-center gap-2 text-sm">
+                        <span className="text-muted-foreground">{formatDateTime(tenant.deleted_at)}</span>
+                        <Badge variant="outline">
+                          {tenant.deleted_for_inactivity ? 'Inactive' : 'By owner'}
+                        </Badge>
+                      </span>
+                    </TableCell>
+                  ) : (
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={`/workspaces/${tenant.id}`}>View</Link>
+                      </Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             )}
